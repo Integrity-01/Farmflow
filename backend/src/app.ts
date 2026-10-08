@@ -1,3 +1,6 @@
+import path from 'node:path';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -13,6 +16,13 @@ import routes from './routes/index.js';
 import { REPORTS_DIR } from './services/report.service.js';
 
 const allowedOrigins = env.CORS_ORIGIN.split(',').map((origin) => origin.trim());
+
+// Built web app, produced by `npm run build:web` into the repo root dist/.
+// From backend/src (tsx) or backend/dist (compiled) this resolves to <repo>/dist.
+const apiDir = path.dirname(fileURLToPath(import.meta.url));
+const webDist = path.resolve(apiDir, '../../dist');
+
+const STATIC_EXEMPT_PREFIXES = ['/api', '/uploads', '/reports', '/assets'];
 
 export function createApp() {
   const app = express();
@@ -68,6 +78,33 @@ export function createApp() {
   });
   app.use('/api', requestLogger, apiLimiter);
   app.use('/api', routes);
+
+  // Serve the built web app from the same process when present (single-service
+  // deploys); otherwise leave routing to an external static host (Nginx, VPS).
+  if (existsSync(path.join(webDist, 'index.html'))) {
+    app.use(
+      express.static(webDist, {
+        index: 'index.html',
+        setHeaders(res, filePath) {
+          const base = path.basename(filePath);
+          if (base === 'index.html' || base === 'sw.js' || base === 'manifest.webmanifest') {
+            res.setHeader('Cache-Control', 'no-store');
+          } else if (filePath.startsWith(path.join(webDist, 'assets'))) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          }
+        },
+      }),
+    );
+
+    app.use((req, res, next) => {
+      if (req.method !== 'GET' || STATIC_EXEMPT_PREFIXES.some((p) => req.path.startsWith(p))) {
+        next();
+        return;
+      }
+      res.setHeader('Cache-Control', 'no-store');
+      res.sendFile(path.join(webDist, 'index.html'));
+    });
+  }
 
   app.use(notFound);
   app.use(errorHandler);

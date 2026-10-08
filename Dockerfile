@@ -33,6 +33,8 @@ COPY --from=deps /app/node_modules /app/node_modules
 COPY --from=deps /app/backend/node_modules /app/backend/node_modules
 COPY --from=build /app/backend/dist /app/backend/dist
 COPY --from=build /app/database/migrations /app/database/migrations
+# Built web app — Express serves it from <repo>/dist (single-service deploys).
+COPY --from=build /app/dist /app/dist
 RUN mkdir -p /app/backend/uploads /app/backend/reports
 EXPOSE 4000
 # Migrations are idempotent (schema_migrations table); run them before boot.
