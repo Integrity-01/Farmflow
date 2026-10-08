@@ -19,9 +19,11 @@ All secrets are environment variables. Nothing sensitive reaches the browser.
 
 A ready-made stack ships in the repo: `Dockerfile` (multi-stage: builds the API
 and the web bundle; the API stage keeps prod deps only), `docker-compose.yml`
-(MariaDB + API + Nginx), and `infra/nginx.conf` (serves the PWA, proxies
-`/api` and `/uploads` to the API — same-origin, so no CORS needed in the
-browser).
+(MariaDB + API + Nginx + Caddy), and `infra/nginx.conf` (serves the PWA,
+proxies `/api` and `/uploads` to the API — same-origin, so no CORS needed in
+the browser). Caddy terminates HTTPS automatically (Let's Encrypt) using the
+domain in `APP_URL`, which is what makes the PWA installable and enables web
+push on phones.
 
 On a fresh VPS (Ubuntu/Debian):
 
@@ -31,39 +33,32 @@ git clone https://github.com/Integrity-01/Farmflow.git
 cd Farmflow
 
 # 2. Create the runtime env from the committed template.
-#    Set at minimum: DB_PASSWORD, MARIADB_ROOT_PASSWORD, JWT_SECRET, APP_URL,
-#    CORS_ORIGIN, EMAIL_*/VAPID_*/OPENAI keys, and change DB_USER to a
-#    non-root user (e.g. farmflow) — the DB container creates that user.
+#    Set at minimum: DB_USER=farmflow, DB_PASSWORD, MARIADB_ROOT_PASSWORD,
+#    JWT_SECRET, APP_URL (your domain, e.g. app.example.com — its A record
+#    must point at the VPS), CORS_ORIGIN, EMAIL_*/VAPID_*/OPENAI keys.
 cp .env.example .env
 nano .env
 
-# 3. Launch (builds images, starts db -> api -> web, runs migrations on boot)
+# 3. Launch (builds images, starts db -> api -> web -> caddy, runs migrations)
 docker compose up -d --build
 
 # 4. Verify
-docker compose ps                    # all three healthy
-curl -I http://localhost/api/health  # JSON health envelope (liveness + DB)
+docker compose ps                    # all healthy
+curl -I https://app.example.com/api/health
 ```
 
 Notes:
 
+- Ports: Caddy publishes 80/443 (web is internal only). Point your domain's
+  A/AAAA record at the VPS IP before issuing certs.
 - The API container runs `node dist/database/migrate.js` before booting.
   Migrations are idempotent (`schema_migrations` table) and safe on every start.
-- Data survives restarts: `db-data` volume (MariaDB) and `uploads` volume
-  (task attachments). `docker compose down` keeps volumes; `down -v` wipes them.
+- Data survives restarts: `db-data` volume (MariaDB), `uploads` volume
+  (task attachments), `caddy-data` (certificates). `down` keeps volumes;
+  `down -v` wipes them.
 - `.env` is git-ignored and docker-ignored — nothing secret enters images.
 - Uploaded files (task attachments) go through a named volume; on a single VPS
   this is fine. For scale, move uploads to object storage (see Scaling notes).
-- TLS: the web container listens on :80. Put Caddy / Nginx / a cloud LB in
-  front with HTTP→HTTPS for the PWA (service worker + push need a secure
-  context — `localhost` is the exception). With Caddy as the edge:
-
-  ```caddyfile
-  yourdomain.com {
-    reverse_proxy localhost:80
-  }
-  ```
-
 - Background jobs (deadline/overdue checks, recurring tasks, daily summaries)
   run inside the `api` process — keep a single long-running `api` replica.
 - Rate limiting is per-process in-memory; an external LB with nginx

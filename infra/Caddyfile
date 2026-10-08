@@ -1,0 +1,10 @@
+# Caddy reverse proxy -> Nginx web container.
+# Automatic HTTPS via Let's Encrypt for the domain set in APP_URL (.env).
+# APP_URL example: app.example.com  (no scheme, no port)
+{$APP_URL:app.example.com} {
+	encode gzip
+
+	# Everything (including /api and /uploads) goes to the Nginx container,
+	# which proxies API paths to the Express service.
+	reverse_proxy web:80
+}
