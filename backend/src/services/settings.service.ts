@@ -8,6 +8,7 @@ export interface NotificationPrefs {
   emailEnabled: boolean;
   pushEnabled: boolean;
   inAppEnabled: boolean;
+  whatsappEnabled: boolean;
   taskAssignments: boolean;
   deadlineReminders: boolean;
   overdueAlerts: boolean;
@@ -19,6 +20,7 @@ const DEFAULT_PREFS: NotificationPrefs = {
   emailEnabled: true,
   pushEnabled: true,
   inAppEnabled: true,
+  whatsappEnabled: false,
   taskAssignments: true,
   deadlineReminders: true,
   overdueAlerts: true,
@@ -30,6 +32,7 @@ interface PrefsRow {
   email_enabled: boolean;
   push_enabled: boolean;
   in_app_enabled: boolean;
+  whatsapp_enabled: boolean;
   task_assignments: boolean;
   deadline_reminders: boolean;
   overdue_alerts: boolean;
@@ -42,6 +45,7 @@ function toPrefs(row: PrefsRow): NotificationPrefs {
     emailEnabled: row.email_enabled,
     pushEnabled: row.push_enabled,
     inAppEnabled: row.in_app_enabled,
+    whatsappEnabled: row.whatsapp_enabled,
     taskAssignments: row.task_assignments,
     deadlineReminders: row.deadline_reminders,
     overdueAlerts: row.overdue_alerts,
@@ -86,8 +90,9 @@ export const settingsService = {
 
   async getNotificationPrefs(userId: string): Promise<NotificationPrefs> {
     const result = await pool.query<PrefsRow>(
-      `SELECT email_enabled, push_enabled, in_app_enabled, task_assignments,
-              deadline_reminders, overdue_alerts, task_completions, daily_summary
+      `SELECT email_enabled, push_enabled, in_app_enabled, whatsapp_enabled,
+              task_assignments, deadline_reminders, overdue_alerts,
+              task_completions, daily_summary
        FROM notification_preferences WHERE user_id = $1`,
       [userId],
     );
@@ -105,13 +110,14 @@ export const settingsService = {
     );
     const assignments = Object.entries(input) as [keyof NotificationPrefs, boolean][];
     const allowed = new Set([
-      'emailEnabled', 'pushEnabled', 'inAppEnabled', 'taskAssignments',
-      'deadlineReminders', 'overdueAlerts', 'taskCompletions', 'dailySummary',
+      'emailEnabled', 'pushEnabled', 'inAppEnabled', 'whatsappEnabled',
+      'taskAssignments', 'deadlineReminders', 'overdueAlerts', 'taskCompletions', 'dailySummary',
     ]);
     const columnMap: Record<keyof NotificationPrefs, string> = {
       emailEnabled: 'email_enabled',
       pushEnabled: 'push_enabled',
       inAppEnabled: 'in_app_enabled',
+      whatsappEnabled: 'whatsapp_enabled',
       taskAssignments: 'task_assignments',
       deadlineReminders: 'deadline_reminders',
       overdueAlerts: 'overdue_alerts',

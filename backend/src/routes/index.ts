@@ -14,6 +14,7 @@ import settingsRoutes from './settings.routes.js';
 import { categoryRouter, taskRouter } from './task.routes.js';
 import workerRoutes from './worker.routes.js';
 import weatherRoutes from './weather.routes.js';
+import whatsappRoutes from './whatsapp.routes.js';
 
 const router = Router();
 
@@ -39,6 +40,7 @@ router.use('/reports', reportRoutes);
 router.use('/history', historyRoutes);
 router.use('/inventory', inventoryRoutes);
 router.use('/weather', weatherRoutes);
+router.use('/whatsapp', whatsappRoutes);
 router.use('/ai', aiRoutes);
 router.use('/settings', settingsRoutes);
 

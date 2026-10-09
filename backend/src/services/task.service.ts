@@ -8,6 +8,7 @@ import { logger } from '../utils/logger.js';
 import { UPLOADS_DIR } from '../config/uploads.js';
 import { pushService } from './push.service.js';
 import { emailService } from './email.service.js';
+import { whatsappService } from './whatsapp.service.js';
 
 export interface TaskItem {
   id: string;
@@ -306,6 +307,13 @@ async function notify(params: {
     type: params.type,
     taskId: params.taskId,
     senderName: params.senderName,
+  });
+  // Fire-and-forget WhatsApp alert; gated on linked number + preferences.
+  void whatsappService.sendToUser(params.userId, {
+    title: params.title,
+    message: params.message,
+    type: params.type,
+    taskId: params.taskId,
   });
 }
 

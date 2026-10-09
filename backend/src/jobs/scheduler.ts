@@ -3,6 +3,7 @@ import { pool } from '../database/pool.js';
 import { logger } from '../utils/logger.js';
 import { pushService } from '../services/push.service.js';
 import { emailService } from '../services/email.service.js';
+import { whatsappService } from '../services/whatsapp.service.js';
 import { recurringService } from '../services/recurring.service.js';
 
 interface DayBounds {
@@ -69,6 +70,13 @@ function insertNotifications(
     });
     // Fire-and-forget notification email; gated on SMTP + user preferences.
     void emailService.sendToUser(row.userId, { type: row.type, taskId: row.taskId });
+    // Fire-and-forget WhatsApp reminder; gated on linked number + preferences.
+    void whatsappService.sendToUser(row.userId, {
+      title: row.title,
+      message: row.message,
+      type: row.type,
+      taskId: row.taskId,
+    });
   }
 }
 
@@ -218,6 +226,12 @@ async function sendDailySummaries() {
 
       const message = `${completed}/${total} done · ${dueToday} due today · ${overdue} overdue`;
       void pushService.sendToUser(userId, {
+        title: 'Your daily FarmFlow summary',
+        message,
+        type: 'daily_summary',
+        taskId: null,
+      });
+      void whatsappService.sendToUser(userId, {
         title: 'Your daily FarmFlow summary',
         message,
         type: 'daily_summary',

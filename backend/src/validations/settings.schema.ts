@@ -13,6 +13,7 @@ export const updateNotificationPrefsSchema = z.object({
   emailEnabled: z.boolean().optional(),
   pushEnabled: z.boolean().optional(),
   inAppEnabled: z.boolean().optional(),
+  whatsappEnabled: z.boolean().optional(),
   taskAssignments: z.boolean().optional(),
   deadlineReminders: z.boolean().optional(),
   overdueAlerts: z.boolean().optional(),

@@ -578,11 +578,31 @@ export interface NotificationPrefs {
   emailEnabled: boolean;
   pushEnabled: boolean;
   inAppEnabled: boolean;
+  whatsappEnabled: boolean;
   taskAssignments: boolean;
   deadlineReminders: boolean;
   overdueAlerts: boolean;
   taskCompletions: boolean;
   dailySummary: boolean;
+}
+
+export interface WhatsAppStatus {
+  configured: boolean;
+  status: 'invited' | 'active' | 'revoked' | null;
+  number: string | null;
+  waName: string | null;
+  inviteCode: string | null;
+  sessionActive: boolean;
+}
+
+export interface WhatsAppInvite {
+  code: string;
+  message: string;
+}
+
+export interface WhatsAppSendInput {
+  to: string;
+  message: string;
 }
 
 export interface ProfileUpdateInput {

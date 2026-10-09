@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { BadgeCheck, KeyRound, Loader2, Mail, Save, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, Check, Copy, KeyRound, Loader2, Mail, MessageCircle, Save, ShieldCheck, Unlink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { Switch } from '@/components/ui/Switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { settingsApi } from '@/services/settings';
+import { whatsappApi } from '@/services/whatsapp';
 import { pushPermissionStatus, subscribeDevicePush, unsubscribeDevicePush } from '@/services/push';
 import { useAuthStore } from '@/store/auth.store';
 import { useToastStore } from '@/store/toast.store';
@@ -21,6 +22,7 @@ const CHANNEL_ITEMS: { key: keyof NotificationPrefs; label: string; description:
   { key: 'emailEnabled', label: 'Email', description: 'Receive important updates by email.' },
   { key: 'pushEnabled', label: 'Push notifications', description: 'Prompt you on your device.' },
   { key: 'inAppEnabled', label: 'In-app', description: 'Show notifications inside FarmFlow.' },
+  { key: 'whatsappEnabled', label: 'WhatsApp', description: 'Send alerts to your connected WhatsApp number.' },
 ];
 
 const ALERT_ITEMS: { key: keyof NotificationPrefs; label: string; description: string }[] = [
@@ -69,6 +71,7 @@ export function Settings() {
   const [pushBusy, setPushBusy] = useState(false);
   const [pushPermission, setPushPermission] = useState<'granted' | 'denied' | 'default' | 'unsupported'>('default');
   const [pushNotice, setPushNotice] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -153,6 +156,59 @@ export function Settings() {
   const prefs = prefsQuery.data;
   const passwordsMatch = newPassword === confirmPassword;
 
+  const whatsappStatusQuery = useQuery({
+    queryKey: ['whatsapp', 'status'],
+    queryFn: whatsappApi.status,
+    staleTime: 30_000,
+    retry: 0,
+  });
+
+  const inviteMutation = useMutation({
+    mutationFn: whatsappApi.generateInvite,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['whatsapp', 'status'] });
+      useToastStore.getState().add({
+        title: 'Invite code ready',
+        description: 'Send the code to the number you want to connect, then reply "join <code>" on WhatsApp.',
+      });
+    },
+    onError: (err) => {
+      useToastStore.getState().add({
+        title: 'Could not generate an invite',
+        description: err instanceof Error ? err.message : 'Please try again.',
+        variant: 'danger',
+      });
+    },
+  });
+
+  const revokeMutation = useMutation({
+    mutationFn: whatsappApi.revoke,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['whatsapp', 'status'] });
+      useToastStore.getState().add({
+        title: 'WhatsApp link removed',
+        description: 'This number will no longer receive FarmFlow messages.',
+      });
+    },
+    onError: (err) => {
+      useToastStore.getState().add({
+        title: 'Could not remove the link',
+        description: err instanceof Error ? err.message : 'Please try again.',
+        variant: 'danger',
+      });
+    },
+  });
+
+  async function copyInvite(code: string) {
+    try {
+      await navigator.clipboard.writeText(code);
+    } catch {
+      // Clipboard can be blocked in embedded browsers; the code stays visible.
+    }
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  }
+
   function handleProfileSubmit(event: FormEvent) {
     event.preventDefault();
     profileMutation.mutate({ name: name.trim(), phone: phone.trim() || null });
@@ -228,6 +284,7 @@ export function Settings() {
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
         </TabsList>
 
@@ -323,6 +380,127 @@ export function Settings() {
                       />
                     ))}
                   </div>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="whatsapp">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="size-5 text-brand-600" aria-hidden />
+                WhatsApp connect
+              </CardTitle>
+              <CardDescription>
+                Link a phone number and turn FarmFlow into your pocket assistant — alerts and Q&A on WhatsApp.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {whatsappStatusQuery.isLoading ? (
+                <div className="space-y-3">
+                  {[0, 1].map((item) => (
+                    <Skeleton key={item} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : whatsappStatusQuery.data ? (
+                <div className="space-y-4">
+                  {!whatsappStatusQuery.data.configured ? (
+                    <div className="space-y-3">
+                      <p className="text-sm leading-relaxed text-slate-600">
+                        FarmFlow can chat with you on WhatsApp, but this deployment isn't connected to the WhatsApp
+                        Cloud API yet. An admin needs to add <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">WHATSAPP_TOKEN</code>,{' '}
+                        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">WHATSAPP_PHONE_ID</code>,{' '}
+                        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">WHATSAPP_VERIFY_TOKEN</code> and{' '}
+                        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">WHATSAPP_WEBHOOK_SECRET</code> to the
+                        server's <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">.env</code>, then come back here.
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        The full setup guide lives in <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">docs/whatsapp.md</code>.
+                      </p>
+                    </div>
+                  ) : whatsappStatusQuery.data.status === 'active' ? (
+                    <div className="space-y-4">
+                      <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                        <p className="flex items-center gap-2 text-sm font-medium text-emerald-800">
+                          <Check className="size-4" aria-hidden />
+                          Connected
+                        </p>
+                        <p className="mt-1 text-sm text-emerald-700">
+                          {'+'}
+                          {whatsappStatusQuery.data.number ?? ''}
+                          {whatsappStatusQuery.data.waName ? ` · ${whatsappStatusQuery.data.waName}` : ''}
+                        </p>
+                        <p className="mt-1 text-xs text-emerald-600">
+                          {whatsappStatusQuery.data.sessionActive
+                            ? 'Session active — you can chat right now.'
+                            : 'No recent session. Send a message to start chatting again.'}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        loading={revokeMutation.isPending}
+                        onClick={() => revokeMutation.mutate()}
+                      >
+                        <Unlink className="size-4" aria-hidden />
+                        Remove this number
+                      </Button>
+                    </div>
+                  ) : inviteMutation.isPending ? (
+                    <div className="space-y-3">
+                      <Skeleton className="h-10 w-full" />
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {whatsappStatusQuery.data.status === 'revoked' ? (
+                        <p className="text-sm text-slate-500">Your previous link was removed. Generate a fresh invite to reconnect.</p>
+                      ) : null}
+                      {whatsappStatusQuery.data.inviteCode ? (
+                        <div className="space-y-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <code className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-lg font-semibold tracking-widest text-brand-700">
+                              {whatsappStatusQuery.data.inviteCode}
+                            </code>
+                            <Button variant="outline" type="button" onClick={() => void copyInvite(whatsappStatusQuery.data!.inviteCode!)}>
+                              {copied ? <Check className="size-4" aria-hidden /> : <Copy className="size-4" aria-hidden />}
+                              {copied ? 'Copied' : 'Copy'}
+                            </Button>
+                          </div>
+                          <ol className="list-decimal space-y-1 pl-5 text-sm text-slate-600">
+                            <li>Open WhatsApp on the phone you want to connect.</li>
+                            <li>Message the FarmFlow number (the one linked to this deployment).</li>
+                            <li>
+                              Reply with{' '}
+                              <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">
+                                join {whatsappStatusQuery.data.inviteCode}
+                              </code>
+                              .
+                            </li>
+                          </ol>
+                          <p className="text-xs text-slate-400">
+                            The invite stays valid until the number connects. Generating a new one replaces the old code.
+                          </p>
+                          <Button variant="outline" type="button" onClick={() => inviteMutation.mutate()}>
+                            Generate a new code
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-sm leading-relaxed text-slate-600">
+                            Create an invite code, message the FarmFlow WhatsApp number, and reply{' '}
+                            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">join &lt;code&gt;</code> to bind your
+                            account. Once linked, switch on the WhatsApp channel under Notifications.
+                          </p>
+                          <Button type="button" onClick={() => inviteMutation.mutate()}>
+                            <MessageCircle className="size-4" aria-hidden />
+                            Generate invite code
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : null}
             </CardContent>

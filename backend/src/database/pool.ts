@@ -17,6 +17,7 @@ const BOOLEAN_COLUMNS = new Set([
   'email_enabled',
   'push_enabled',
   'in_app_enabled',
+  'whatsapp_enabled',
   'task_assignments',
   'deadline_reminders',
   'overdue_alerts',
