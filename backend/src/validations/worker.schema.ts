@@ -16,6 +16,7 @@ export const createWorkerSchema = z.object({
   phone: z.string().trim().max(30, 'Phone number is too long.').optional().nullable(),
   email: z.email('Please enter a valid email address.').optional().nullable(),
   position: z.string().trim().max(60, 'Position is too long.').optional().nullable(),
+  userId: nullableUuid,
   farmId: nullableUuid,
   fieldId: nullableUuid,
   skills: z
@@ -36,6 +37,7 @@ export const updateWorkerSchema = z
     phone: z.string().trim().max(30).optional().nullable(),
     email: z.email('Please enter a valid email address.').optional().nullable(),
     position: z.string().trim().max(60).optional().nullable(),
+    userId: nullableUuid,
     farmId: nullableUuid,
     fieldId: nullableUuid,
     skills: z

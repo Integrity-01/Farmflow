@@ -73,10 +73,11 @@ export function Register() {
       }
     >
       <Alert variant="info" className="mb-4">
-        <AlertTitle>First account = farm administrator</AlertTitle>
+        <AlertTitle>First account = organization administrator</AlertTitle>
         <AlertDescription>
           The very first account created on a new FarmFlow instance becomes the
-          administrator and can manage the whole setup.
+          organization administrator and can manage the whole setup. Everyone
+          else joins by invitation or with an access key.
         </AlertDescription>
       </Alert>
 

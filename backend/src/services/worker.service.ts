@@ -3,6 +3,7 @@ import type { AuthUser, UserRole } from '../types/auth.js';
 import { roleAtLeast } from '../types/auth.js';
 import { AppError } from '../utils/AppError.js';
 import { logger } from '../utils/logger.js';
+import { pushService } from './push.service.js';
 
 export interface WorkerItem {
   id: string;
@@ -94,8 +95,23 @@ function insertScope(actor: AuthUser): string {
   return roleScope(actor.role).replace(/\$scope/g, `'${actor.id}'`);
 }
 
-async function assertValidPlacement(farmId: string | null, fieldId: string | null) {
-  if (farmId) {
+async function farmName(farmId: string): Promise<string | null> {
+  const res = await pool.query<{ name: string }>('SELECT name FROM farms WHERE id = $1', [farmId]);
+  return res.rows[0]?.name ?? null;
+}
+
+async function assertValidUser(userId: string | null) {
+  if (!userId) return;
+  const res = await pool.query<{ id: string }>(
+    'SELECT id FROM users WHERE id = $1 AND is_active = TRUE',
+    [userId],
+  );
+  if (res.rows.length === 0) {
+    throw new AppError(400, 'Please choose a valid team member account.', 'INVALID_REFERENCE');
+  }
+}
+
+async function assertValidPlacement(farmId: string | null, fieldId: string | null) {  if (farmId) {
     const farm = await pool.query<{ id: string }>('SELECT id FROM farms WHERE id = $1', [farmId]);
     if (farm.rows.length === 0) {
       throw new AppError(400, 'Please choose a valid farm.', 'INVALID_REFERENCE');
@@ -120,7 +136,7 @@ async function canManagePlacement(
   actor: AuthUser,
   farmId: string | null,
 ): Promise<boolean> {
-  if (actor.role === 'administrator') return true;
+  if (actor.role === 'organization_administrator') return true;
   if (!roleAtLeast(actor.role, 'farm_manager')) return false;
   if (!farmId) return false;
   const result = await pool.query<{ id: string }>(
@@ -219,6 +235,7 @@ export const workerService = {
       name: string;
       phone?: string | null;
       email?: string | null;
+      userId?: string | null;
       position?: string | null;
       farmId?: string | null;
       fieldId?: string | null;
@@ -231,6 +248,7 @@ export const workerService = {
     const fieldId = input.fieldId ?? null;
 
     await assertValidPlacement(farmId, fieldId);
+    await assertValidUser(input.userId ?? null);
     if (!(await canManagePlacement(actor, farmId))) {
       throw new AppError(
         403,
@@ -244,10 +262,11 @@ export const workerService = {
     const joinedAt = input.joinedAt ?? new Date().toISOString().slice(0, 10);
 
     await pool.query(
-      `INSERT INTO workers (id, name, phone, email, role, farm_id, field_id, skills, status, joined_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      `INSERT INTO workers (id, user_id, name, phone, email, role, farm_id, field_id, skills, status, joined_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         id,
+        input.userId ?? null,
         input.name,
         input.phone ?? null,
         input.email ?? null,
@@ -272,6 +291,7 @@ export const workerService = {
       name?: string;
       phone?: string | null;
       email?: string | null;
+      userId?: string | null;
       position?: string | null;
       farmId?: string | null;
       fieldId?: string | null;
@@ -283,8 +303,8 @@ export const workerService = {
     if (!isUuid.test(id)) {
       throw new AppError(404, 'This worker could not be found.', 'NOT_FOUND');
     }
-    const current = await pool.query<{ id: string; farm_id: string | null }>(
-      'SELECT id, farm_id FROM workers WHERE id = $1',
+    const current = await pool.query<{ id: string; farm_id: string | null; user_id: string | null }>(
+      'SELECT id, farm_id, user_id FROM workers WHERE id = $1',
       [id],
     );
     if (current.rows.length === 0) {
@@ -300,6 +320,9 @@ export const workerService = {
           : undefined;
 
     await assertValidPlacement(nextFarmId, nextFieldId ?? null);
+    if (input.userId !== undefined) {
+      await assertValidUser(input.userId ?? null);
+    }
     if (!(await canManagePlacement(actor, nextFarmId))) {
       throw new AppError(
         403,
@@ -314,6 +337,7 @@ export const workerService = {
       ['name', 'name'],
       ['phone', 'phone'],
       ['email', 'email'],
+      ['userId', 'user_id'],
       ['position', 'role'],
       ['farmId', 'farm_id'],
       ['fieldId', 'field_id'],
@@ -339,6 +363,29 @@ export const workerService = {
 
     params.push(id);
     await pool.query(`UPDATE workers SET ${sets.join(', ')}, updated_at = now() WHERE id = $${params.length}`, params);
+
+    const previousFarmId = current.rows[0].farm_id;
+    const linkedUserId = current.rows[0].user_id;
+    if (nextFarmId !== previousFarmId && linkedUserId) {
+      const newFarmName = nextFarmId ? await farmName(nextFarmId) : null;
+      const title = newFarmName ? 'New farm assignment' : 'Farm assignment removed';
+      const message = newFarmName
+        ? `You have been assigned to ${newFarmName}.`
+        : 'You are no longer assigned to a farm.';
+      try {
+        await pool.query(
+          `INSERT INTO notifications (user_id, type, title, message, organization_id)
+           VALUES ($1, 'system', $2, $3, $4)`,
+          [linkedUserId, title, message, actor.currentOrg?.id ?? null],
+        );
+        void pushService.sendToUser(linkedUserId, { title, message, type: 'system', taskId: null });
+      } catch (error) {
+        logger.warn('[worker] Farm-assignment notification failed', {
+          workerId: id,
+          message: (error as Error).message,
+        });
+      }
+    }
 
     const result = await pool.query<WorkerRow>(`${WORKER_SELECT} WHERE w.id = $1`, [id]);
     return toWorker(result.rows[0]);

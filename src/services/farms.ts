@@ -73,5 +73,5 @@ export const farmsApi = {
 };
 
 export function canManageFarms(role: UserRole | null): boolean {
-  return role === 'administrator' || role === 'farm_manager';
+  return role === 'organization_administrator' || role === 'farm_manager';
 }

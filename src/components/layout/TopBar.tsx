@@ -17,6 +17,7 @@ import { authApi } from '@/services/auth';
 import { notificationsApi } from '@/services/notifications';
 import { useToastStore } from '@/store/toast.store';
 import { canAccessPath, navItems } from './nav';
+import { OrgSwitcher } from './OrgSwitcher';
 
 export function TopBar() {
   const isOnline = useAppStore((state) => state.isOnline);
@@ -70,6 +71,7 @@ export function TopBar() {
         </h1>
 
         <div className="ml-auto flex items-center gap-2">
+          <OrgSwitcher />
           {isOnline ? (
             <Badge variant="success">
               <Wifi className="size-3" aria-hidden />
@@ -118,7 +120,7 @@ export function TopBar() {
               <DropdownMenuItem asChild>
                 <Link to="/profile">Profile</Link>
               </DropdownMenuItem>
-              {user?.role === 'administrator' ? (
+              {user?.role === 'organization_administrator' ? (
                 <DropdownMenuItem asChild>
                   <Link to="/settings">Settings</Link>
                 </DropdownMenuItem>

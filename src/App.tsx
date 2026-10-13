@@ -20,8 +20,10 @@ import { RecurringTasks } from '@/pages/RecurringTasks';
 import { Reports } from '@/pages/Reports';
 import { Settings } from '@/pages/Settings';
 import { Tasks } from '@/pages/Tasks';
+import { Team } from '@/pages/Team';
 import { Weather } from '@/pages/Weather';
 import { Workers } from '@/pages/Workers';
+import { AcceptInvitation } from '@/pages/auth/AcceptInvitation';
 import { ForgotPassword } from '@/pages/auth/ForgotPassword';
 import { Login } from '@/pages/auth/Login';
 import { Register } from '@/pages/auth/Register';
@@ -69,6 +71,14 @@ export default function App() {
             </GuestGuard>
           }
         />
+        <Route
+          path="/accept-invitation"
+          element={
+            <AppGuard>
+              <AcceptInvitation />
+            </AppGuard>
+          }
+        />
 
         <Route
           element={
@@ -90,6 +100,7 @@ export default function App() {
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/history" element={<History />} />
+          <Route path="/team" element={<Team />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />

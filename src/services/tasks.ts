@@ -104,9 +104,13 @@ export const tasksApi = {
 };
 
 export function canCreateTasks(role: UserRole | null): boolean {
-  return role === 'administrator' || role === 'farm_manager' || role === 'supervisor';
+  return (
+    role === 'organization_administrator' || role === 'farm_manager' || role === 'supervisor'
+  );
 }
 
 export function canMutateTask(role: UserRole | null): boolean {
-  return role === 'administrator' || role === 'farm_manager' || role === 'supervisor';
+  return (
+    role === 'organization_administrator' || role === 'farm_manager' || role === 'supervisor'
+  );
 }

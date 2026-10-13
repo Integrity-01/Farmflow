@@ -10,6 +10,7 @@ const GROUPS: { label: string; to: string[] }[] = [
   { label: 'Overview', to: ['/', '/tasks', '/my-tasks', '/recurring-tasks'] },
   { label: 'Farm', to: ['/farms', '/inventory', '/workers'] },
   { label: 'Insights', to: ['/analytics', '/weather', '/assistant', '/reports', '/history'] },
+  { label: 'Organization', to: ['/team'] },
   { label: 'System', to: ['/notifications', '/settings'] },
 ];
 

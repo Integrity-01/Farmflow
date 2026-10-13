@@ -230,7 +230,10 @@ export function TaskDetailDialog({ open, onOpenChange, taskId }: TaskDetailDialo
   if (!open) return null;
 
   const canLead =
-    user && (user.role === 'administrator' || user.role === 'farm_manager' || user.role === 'supervisor');
+    user &&
+    (user.role === 'organization_administrator' ||
+      user.role === 'farm_manager' ||
+      user.role === 'supervisor');
   const isAssignee = task ? Boolean(user && task.assigneeUserId === user.id) : false;
   const canAdvance = task ? Boolean(canLead || isAssignee) : false;
 

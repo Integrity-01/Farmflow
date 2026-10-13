@@ -204,7 +204,7 @@ async function buildCsv(actor: AuthUser, reportType: string, filters: ReportFilt
 
 export const reportService = {
   async list(actor: AuthUser, query: { page: number; pageSize: number }) {
-    const isAdmin = actor.role === 'administrator';
+    const isAdmin = actor.role === 'organization_administrator';
     const conditions = isAdmin ? [] : ['created_by = $1'];
     const params: unknown[] = isAdmin ? [] : [actor.id];
     const whereSql = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -289,7 +289,7 @@ export const reportService = {
       throw new AppError(404, 'This report could not be found.', 'NOT_FOUND');
     }
     const report = result.rows[0];
-    if (actor.role !== 'administrator' && report.created_by !== actor.id) {
+    if (actor.role !== 'organization_administrator' && report.created_by !== actor.id) {
       throw new AppError(403, "You can only delete your own reports.", 'FORBIDDEN');
     }
     await pool.query('DELETE FROM reports WHERE id = $1', [id]);

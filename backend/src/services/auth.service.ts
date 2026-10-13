@@ -12,6 +12,7 @@ import { env } from '../config/env.js';
 import { sendEmail } from './email.service.js';
 import { emailTemplates } from './email/templates.js';
 import { pool, uid } from '../database/pool.js';
+import { organizationService } from './organization.service.js';
 import type { AuthUser, UserRole } from '../types/auth.js';
 
 export interface AuthResult {
@@ -56,6 +57,23 @@ function toAuthUser(row: UserRow): AuthUser {
     role: row.role,
     avatarUrl: row.avatar_url,
   };
+}
+
+async function withOrgs(user: AuthUser, sessionId?: string): Promise<AuthUser> {
+  const orgs = await organizationService.listMyOrgs(user.id);
+  let activeId: string | null = null;
+  if (sessionId) {
+    const res = await pool.query<{ active_organization_id: string | null }>(
+      `SELECT active_organization_id FROM sessions WHERE id = $1`,
+      [sessionId],
+    );
+    activeId = res.rows[0]?.active_organization_id ?? null;
+  }
+  const currentOrg =
+    orgs.find((org) => org.id === activeId && org.status === 'active') ??
+    orgs.find((org) => org.status === 'active') ??
+    null;
+  return { ...user, orgs, currentOrg };
 }
 
 const REFRESH_COOKIE_NAME = 'ff_refresh';
@@ -125,13 +143,14 @@ export const authSession = {
     );
 
     const user = toAuthUser({ ...session, id: session.user_id });
+    const fullUser = await withOrgs(user, session.id);
     const accessToken = signAccessToken({
       sub: user.id,
       role: user.role,
       sid: session.id,
     });
 
-    return { user, accessToken, refreshToken };
+    return { user: fullUser, accessToken, refreshToken };
   },
 };
 
@@ -159,7 +178,7 @@ export const authService = {
 
     const countResult = await pool.query<{ count: string }>('SELECT COUNT(*)::text AS count FROM users');
     const isFirstUser = Number(countResult.rows[0].count) === 0;
-    const role: UserRole = isFirstUser ? 'administrator' : 'field_worker';
+    const role: UserRole = isFirstUser ? 'organization_administrator' : 'field_officer';
 
     const passwordHash = await bcrypt.hash(input.password, 10);
     const id = uid();
@@ -176,12 +195,34 @@ export const authService = {
       [user.id],
     );
 
+    if (isFirstUser) {
+      const orgId = uid();
+      await pool.query(
+        `INSERT INTO organizations (id, name, created_by)
+         VALUES ($1, $2, $3)`,
+        [orgId, `${user.name}'s Organization`, user.id],
+      );
+      const roleResult = await pool.query<{ id: string }>(
+        `SELECT id FROM roles WHERE code = $1 AND organization_id IS NULL`,
+        ['organization_administrator'],
+      );
+      const roleRow = roleResult.rows[0];
+      if (roleRow) {
+        await pool.query(
+          `INSERT INTO organization_memberships
+             (id, organization_id, user_id, role_id, status, joined_at)
+           VALUES ($1, $2, $3, $4, 'active', now())`,
+          [uid(), orgId, user.id, roleRow.id],
+        );
+      }
+    }
+
     const accessToken = signAccessToken({ sub: user.id, role: user.role, sid: sessionId });
 
     const welcome = emailTemplates.welcome(user.name);
     sendEmail({ to: user.email, subject: welcome.subject, html: welcome.html }).catch(() => {});
 
-    return { user, accessToken, refreshToken };
+    return { user: await withOrgs(user, sessionId), accessToken, refreshToken };
   },
 
   async login(
@@ -204,13 +245,13 @@ export const authService = {
     await pool.query(`UPDATE users SET last_login_at = now() WHERE id = $1`, [user.id]);
 
     const { refreshToken, sessionId } = await authSession.createSession(user.id, req);
-    const authUser = toAuthUser(user);
+    const authUser = await withOrgs(toAuthUser(user), sessionId);
     const accessToken = signAccessToken({ sub: user.id, role: user.role, sid: sessionId });
 
     return { user: authUser, accessToken, refreshToken };
   },
 
-  async me(userId: string): Promise<AuthUser> {
+  async me(userId: string, sessionId?: string): Promise<AuthUser> {
     const result = await pool.query<UserRow>(
       `SELECT id, name, email, phone, role, avatar_url, password_hash, is_active
        FROM users WHERE id = $1`,
@@ -220,7 +261,7 @@ export const authService = {
     if (!user || !user.is_active) {
       throw new AppError(401, 'Your account is no longer active.', 'UNAUTHORIZED');
     }
-    return toAuthUser(user);
+    return withOrgs(toAuthUser(user), sessionId);
   },
 
   async forgotPassword(emailInput: string): Promise<{ delivered: boolean; devResetLink?: string }> {

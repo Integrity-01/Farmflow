@@ -8,7 +8,6 @@ import { logger } from '../utils/logger.js';
 import { UPLOADS_DIR } from '../config/uploads.js';
 import { pushService } from './push.service.js';
 import { emailService } from './email.service.js';
-import { whatsappService } from './whatsapp.service.js';
 
 export interface TaskItem {
   id: string;
@@ -197,7 +196,7 @@ function ownScope(actor: AuthUser): string {
 }
 
 async function canLeadFarm(actor: AuthUser, farmId: string): Promise<boolean> {
-  if (actor.role === 'administrator') return true;
+  if (actor.role === 'organization_administrator') return true;
   const farm = await pool.query<{ manager_id: string | null }>(
     'SELECT manager_id FROM farms WHERE id = $1',
     [farmId],
@@ -307,13 +306,6 @@ async function notify(params: {
     type: params.type,
     taskId: params.taskId,
     senderName: params.senderName,
-  });
-  // Fire-and-forget WhatsApp alert; gated on linked number + preferences.
-  void whatsappService.sendToUser(params.userId, {
-    title: params.title,
-    message: params.message,
-    type: params.type,
-    taskId: params.taskId,
   });
 }
 

@@ -161,7 +161,7 @@ async function canManageFarm(
   actor: AuthUser,
   farm: { id: string; manager_id: string | null },
 ): Promise<boolean> {
-  if (actor.role === 'administrator') return true;
+  if (actor.role === 'organization_administrator') return true;
   if (roleAtLeast(actor.role, 'farm_manager') && farm.manager_id === actor.id) return true;
   return false;
 }
@@ -178,7 +178,7 @@ async function resolveFarm(id: string): Promise<{ id: string; manager_id: string
 async function assertManagerIsValid(managerId: string | null) {
   if (!managerId) return;
   const result = await pool.query<{ id: string }>(
-    `SELECT id FROM users WHERE id = $1 AND is_active = TRUE AND role IN ('farm_manager', 'administrator')`,
+    `SELECT id FROM users WHERE id = $1 AND is_active = TRUE AND role IN ('farm_manager', 'organization_administrator')`,
     [managerId],
   );
   if (result.rows.length === 0) {
@@ -251,7 +251,7 @@ export const farmService = {
   async listManagers() {
     const result = await pool.query<{ id: string; name: string }>(
       `SELECT id, name FROM users
-       WHERE is_active = TRUE AND role IN ('farm_manager', 'administrator')
+       WHERE is_active = TRUE AND role IN ('farm_manager', 'organization_administrator')
        ORDER BY name`,
     );
     return result.rows;

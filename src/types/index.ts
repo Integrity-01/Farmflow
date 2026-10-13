@@ -19,7 +19,22 @@ export interface ApiErrorPayload {
   details?: unknown;
 }
 
-export type UserRole = 'administrator' | 'farm_manager' | 'supervisor' | 'field_worker';
+export type UserRole =
+  | 'organization_administrator'
+  | 'farm_manager'
+  | 'supervisor'
+  | 'field_officer';
+
+export interface OrgSummary {
+  id: string;
+  name: string;
+  role: string;
+  roleId?: string;
+  status: MembershipStatus;
+  permissions?: string[];
+}
+
+export type MembershipStatus = 'pending' | 'active' | 'suspended';
 
 export interface AuthUser {
   id: string;
@@ -28,6 +43,8 @@ export interface AuthUser {
   phone: string | null;
   role: UserRole;
   avatarUrl: string | null;
+  currentOrg?: OrgSummary | null;
+  orgs?: OrgSummary[];
 }
 
 export interface AuthSession {
@@ -36,11 +53,47 @@ export interface AuthSession {
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {
-  administrator: 'Administrator',
+  organization_administrator: 'Organization Administrator',
   farm_manager: 'Farm Manager',
-  supervisor: 'Supervisor',
-  field_worker: 'Field Worker',
+  supervisor: 'Supervisor / M&E',
+  field_officer: 'Field Officer',
 };
+
+export interface OrgRole {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  system: boolean;
+}
+
+export interface OrganizationMember {
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  avatarUrl: string | null;
+  roleId: string;
+  role: string;
+  roleName: string;
+  status: MembershipStatus;
+  joinedAt: string | null;
+  requestedAt: string;
+}
+
+export type InvitationStatus = 'pending' | 'accepted' | 'revoked';
+
+export interface OrgInvitation {
+  id: string;
+  email: string;
+  roleId: string;
+  role: string;
+  roleName: string;
+  status: InvitationStatus;
+  expiresAt: string;
+  createdAt: string;
+}
 
 export type FarmStatus = 'active' | 'inactive' | 'archived';
 export type FieldStatus = 'active' | 'fallow' | 'harvested' | 'inactive';
@@ -578,31 +631,11 @@ export interface NotificationPrefs {
   emailEnabled: boolean;
   pushEnabled: boolean;
   inAppEnabled: boolean;
-  whatsappEnabled: boolean;
   taskAssignments: boolean;
   deadlineReminders: boolean;
   overdueAlerts: boolean;
   taskCompletions: boolean;
   dailySummary: boolean;
-}
-
-export interface WhatsAppStatus {
-  configured: boolean;
-  status: 'invited' | 'active' | 'revoked' | null;
-  number: string | null;
-  waName: string | null;
-  inviteCode: string | null;
-  sessionActive: boolean;
-}
-
-export interface WhatsAppInvite {
-  code: string;
-  message: string;
-}
-
-export interface WhatsAppSendInput {
-  to: string;
-  message: string;
 }
 
 export interface ProfileUpdateInput {

@@ -182,7 +182,7 @@ function parseDateOnly(value: string | Date): Date {
 }
 
 async function canLeadFarm(actor: AuthUser, farmId: string): Promise<boolean> {
-  if (actor.role === 'administrator') return true;
+  if (actor.role === 'organization_administrator') return true;
   const farm = await pool.query<{ manager_id: string | null }>(
     'SELECT manager_id FROM farms WHERE id = $1',
     [farmId],

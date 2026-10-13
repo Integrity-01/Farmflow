@@ -105,7 +105,7 @@ async function canManageFarm(
   actor: AuthUser,
   farm: { id: string; manager_id: string | null },
 ): Promise<boolean> {
-  if (actor.role === 'administrator') return true;
+  if (actor.role === 'organization_administrator') return true;
   if (roleAtLeast(actor.role, 'farm_manager') && farm.manager_id === actor.id) return true;
   return false;
 }

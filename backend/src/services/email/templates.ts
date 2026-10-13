@@ -192,4 +192,22 @@ export const emailTemplates = {
     );
     return { subject, html };
   },
+
+  organizationInvitation(
+    name: string,
+    ctx: { organizationName: string; roleName: string; inviterName: string; link: string },
+  ) {
+    const subject = `You're invited to join ${ctx.organizationName} on FarmFlow`;
+    const html = layout(
+      subject,
+      `<p>Hi ${esc(name)},</p>
+       <p>${esc(ctx.inviterName)} invited you to join <strong>${esc(ctx.organizationName)}</strong> as
+       <strong>${esc(ctx.roleName)}</strong>.</p>
+       ${actionButton(ctx.link, 'Accept invitation')}
+       <p>If the button doesn't work, copy this link into your browser:</p>
+       <p style="word-break:break-all;"><a href="${esc(ctx.link)}" style="color:#2f7d32;">${esc(ctx.link)}</a></p>
+       <p>This invitation expires in 7 days. If you weren't expecting it, you can ignore this email.</p>`,
+    );
+    return { subject, html };
+  },
 };

@@ -1,4 +1,10 @@
-export type UserRole = 'administrator' | 'farm_manager' | 'supervisor' | 'field_worker';
+import type { OrgSummary } from './org.js';
+
+export type UserRole =
+  | 'organization_administrator'
+  | 'farm_manager'
+  | 'supervisor'
+  | 'field_officer';
 
 export interface AuthUser {
   id: string;
@@ -7,20 +13,22 @@ export interface AuthUser {
   phone: string | null;
   role: UserRole;
   avatarUrl: string | null;
+  currentOrg?: OrgSummary | null;
+  orgs?: OrgSummary[];
 }
 
 export const USER_ROLES: UserRole[] = [
-  'administrator',
+  'organization_administrator',
   'farm_manager',
   'supervisor',
-  'field_worker',
+  'field_officer',
 ];
 
 const ROLE_RANK: Record<UserRole, number> = {
-  administrator: 4,
+  organization_administrator: 4,
   farm_manager: 3,
   supervisor: 2,
-  field_worker: 1,
+  field_officer: 1,
 };
 
 export function roleAtLeast(role: UserRole, minimum: UserRole): boolean {

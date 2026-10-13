@@ -1,6 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { pool } from '../database/pool.js';
 import type { AuthUser, UserRole } from '../types/auth.js';
+import type { OrgSummary } from '../types/org.js';
 import { AppError } from '../utils/AppError.js';
 import { verifyAccessToken } from '../utils/tokens.js';
 
@@ -12,6 +13,33 @@ interface UserRow {
   role: UserRole;
   avatar_url: string | null;
   is_active: boolean;
+}
+
+interface MembershipRow {
+  organization_id: string;
+  org_name: string;
+  role_id: string;
+  role_code: string;
+  status: string;
+}
+
+async function loadOrgs(userId: string): Promise<OrgSummary[]> {
+  const result = await pool.query<MembershipRow>(
+    `SELECT m.organization_id, o.name AS org_name, m.role_id, r.code AS role_code, m.status
+     FROM organization_memberships m
+     JOIN organizations o ON o.id = m.organization_id
+     JOIN roles r ON r.id = m.role_id
+     WHERE m.user_id = $1
+     ORDER BY o.created_at`,
+    [userId],
+  );
+  return result.rows.map((row) => ({
+    id: row.organization_id,
+    name: row.org_name,
+    role: row.role_code,
+    roleId: row.role_id,
+    status: row.status,
+  }));
 }
 
 async function resolveUser(payload: { sub: string; role: UserRole; sid: string }) {
@@ -27,6 +55,18 @@ async function resolveUser(payload: { sub: string; role: UserRole; sid: string }
     return null;
   }
 
+  const orgs = await loadOrgs(user.id);
+
+  const sessionRes = await pool.query<{ active_organization_id: string | null }>(
+    `SELECT active_organization_id FROM sessions WHERE id = $1 AND revoked_at IS NULL`,
+    [payload.sid],
+  );
+  const activeId = sessionRes.rows[0]?.active_organization_id ?? null;
+  const currentOrg =
+    orgs.find((org) => org.id === activeId && org.status === 'active') ??
+    orgs.find((org) => org.status === 'active') ??
+    null;
+
   const authUser: AuthUser = {
     id: user.id,
     name: user.name,
@@ -34,6 +74,8 @@ async function resolveUser(payload: { sub: string; role: UserRole; sid: string }
     phone: user.phone,
     role: user.role,
     avatarUrl: user.avatar_url,
+    orgs,
+    currentOrg,
   };
 
   return { user: authUser, sessionId: payload.sid };

@@ -34,10 +34,6 @@ still live in spreadsheets.
 - PWA: installable, offline-capable with sync queue (progressive rollout)
 - AI assistant (OpenAI, opt-in): ask questions about your farm or generate
   suggested tasks — degrades cleanly until `OPENAI_API_KEY` is set
-- **WhatsApp-first assistant** (opt-in): link a phone number by replying
-  `join <code>` on WhatsApp, then chat to ask about weather, tasks and stock,
-  and receive task/deadline/daily alerts over WhatsApp via the Cloud API —
-  combines gracefully while unconfigured (see `docs/whatsapp.md`)
 - Full audit trail for every task
 
 ## Technology stack
@@ -118,7 +114,6 @@ Key variables (see `.env.example` for the full list):
 | `EMAIL_*` | Email provider settings |
 | `VAPID_*` | Web-push keys |
 | `OPENAI_API_KEY` | Used only by the opt-in AI features (Phase 15) |
-| `WHATSAPP_*` | WhatsApp Cloud API (see `docs/whatsapp.md`) — optional, self-degrading |
 
 Never commit `.env` — it is gitignored.
 
@@ -196,7 +191,6 @@ and the AI confirmation workflow.
 Live HTTP regression suites (require the running API + MariaDB):
 
 ```bash
-node backend/whatsapp-live.cjs      # WhatsApp layer (15 checks)
 node backend/attach-live.cjs        # attachment upload/delete (13 checks)
 node backend/single-service-live.cjs # single-service static serving (12 checks)
 ```
@@ -208,7 +202,7 @@ See `docs/deployment.md`. High-level topology:
 ```
 Frontend (static)  →  Backend API  →  MariaDB / MySQL
                         ↓  ↓  ↓
-                 Object storage · Email · Push · OpenAI · WhatsApp
+                 Object storage · Email · Push · OpenAI
 ```
 
 All secrets live in environment variables. The frontend is a static build

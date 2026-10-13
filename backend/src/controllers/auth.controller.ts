@@ -70,7 +70,7 @@ export async function logout(req: Request, res: Response, next: NextFunction) {
 
 export async function me(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = await authService.me(req.auth!.user.id);
+    const user = await authService.me(req.auth!.user.id, req.auth!.sessionId);
     res.json({ user });
   } catch (error) {
     next(error);

@@ -61,5 +61,5 @@ export const inventoryApi = {
 };
 
 export function canManageInventory(role: UserRole | null): boolean {
-  return role === 'administrator' || role === 'farm_manager';
+  return role === 'organization_administrator' || role === 'farm_manager';
 }
