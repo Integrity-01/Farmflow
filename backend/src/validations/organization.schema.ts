@@ -29,3 +29,12 @@ export const acceptInvitationSchema = z.object({
 export const joinOrgSchema = z.object({
   accessKey: z.string().trim().min(1, 'An access key is required.').max(200),
 });
+
+export const updateOrgSettingsSchema = z
+  .object({
+    selfJoin: z.enum(['open', 'approval']).optional(),
+    defaultRole: z.string().trim().min(1).max(40).optional(),
+  })
+  .refine((value) => value.selfJoin !== undefined || value.defaultRole !== undefined, {
+    message: 'Nothing to update.',
+  });

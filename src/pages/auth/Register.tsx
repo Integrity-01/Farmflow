@@ -93,6 +93,16 @@ export function Register() {
           </Alert>
         ) : null}
 
+        {verifiedOrg.organization.joinMode === 'approval' ? (
+          <Alert variant="warning">
+            <AlertTitle>Approval required</AlertTitle>
+            <AlertDescription>
+              After you create your account, an administrator of {verifiedOrg.organization.name}{' '}
+              must approve it before you can access farm data.
+            </AlertDescription>
+          </Alert>
+        ) : null}
+
         <FormField id="name" label="Full name" required error={fieldErrors.name}>
           <Input
             id="name"

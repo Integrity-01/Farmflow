@@ -53,6 +53,32 @@ export async function listRoles(req: Request, res: Response, next: NextFunction)
   }
 }
 
+export async function getOrgSettings(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const settings = await organizationService.getSettingsForActor(req.auth!.user);
+    res.json({ settings });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updateOrgSettings(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const settings = await organizationService.updateSettings(req.auth!.user, req.body);
+    res.json({ settings });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function listMembers(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const members = await organizationService.listMembers(req.auth!.user);

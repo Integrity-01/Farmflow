@@ -8,12 +8,14 @@ import {
   rejectMemberSchema,
   switchOrgSchema,
   updateMemberSchema,
+  updateOrgSettingsSchema,
 } from '../validations/organization.schema.js';
 import {
   acceptInvitation,
   approveMember,
   createInvitation,
   generateAccessKey,
+  getOrgSettings,
   joinWithAccessKey,
   listInvitations,
   listMemberRequests,
@@ -25,6 +27,7 @@ import {
   revokeInvitation,
   switchOrg,
   updateMember,
+  updateOrgSettings,
 } from '../controllers/organization.controller.js';
 
 const orgRouter = Router();
@@ -35,6 +38,8 @@ orgRouter.post('/switch', validate(switchOrgSchema), switchOrg);
 orgRouter.post('/access-keys', generateAccessKey);
 orgRouter.post('/join', validate(joinOrgSchema), joinWithAccessKey);
 orgRouter.get('/roles', listRoles);
+orgRouter.get('/settings', getOrgSettings);
+orgRouter.patch('/settings', validate(updateOrgSettingsSchema), updateOrgSettings);
 
 orgRouter.get('/members', listMembers);
 orgRouter.get('/members/requests', listMemberRequests);

@@ -27,15 +27,16 @@ import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { Switch } from '@/components/ui/Switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { ApiError } from '@/services/api';
-import { organizationApi } from '@/services/organization';
+import { organizationApi, type UpdateOrgSettingsInput } from '@/services/organization';
 import { useAuthStore } from '@/store/auth.store';
 import { useToastStore } from '@/store/toast.store';
 import type { MembershipStatus, OrganizationMember } from '@/types';
 
-type Tab = 'members' | 'requests' | 'invitations' | 'access';
+type Tab = 'members' | 'requests' | 'invitations' | 'access' | 'settings';
 
 const STATUS_LABEL: Record<MembershipStatus, string> = {
   active: 'Active',
@@ -89,6 +90,7 @@ export function Team() {
           {isAdmin ? <TabsTrigger value="requests">Requests</TabsTrigger> : null}
           {canInvite ? <TabsTrigger value="invitations">Invitations</TabsTrigger> : null}
           {isAdmin ? <TabsTrigger value="access">Access key</TabsTrigger> : null}
+          {isAdmin ? <TabsTrigger value="settings">Settings</TabsTrigger> : null}
         </TabsList>
 
         <TabsContent value="members">
@@ -107,6 +109,11 @@ export function Team() {
         {isAdmin ? (
           <TabsContent value="access">
             <AccessKeyTab />
+          </TabsContent>
+        ) : null}
+        {isAdmin ? (
+          <TabsContent value="settings">
+            <JoinSettingsTab />
           </TabsContent>
         ) : null}
       </Tabs>
@@ -735,6 +742,114 @@ function AccessKeyTab() {
           <KeyRound className="size-4" aria-hidden />
           {accessKey ? 'Generate another key' : 'Generate access key'}
         </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+function JoinSettingsTab() {
+  const queryClient = useQueryClient();
+
+  const settingsQuery = useQuery({
+    queryKey: ['org-settings'],
+    queryFn: organizationApi.getSettings,
+    retry: 0,
+  });
+
+  const rolesQuery = useQuery({
+    queryKey: ['org-roles'],
+    queryFn: organizationApi.listRoles,
+    retry: 0,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (input: UpdateOrgSettingsInput) => organizationApi.updateSettings(input),
+    onSuccess: async (settings) => {
+      queryClient.setQueryData(['org-settings'], settings);
+      notify('Settings saved', 'New-member settings were updated.');
+    },
+    onError: (error) =>
+      notify('Could not save settings', errorMessage(error, 'Please try again.'), 'danger'),
+  });
+
+  if (settingsQuery.isLoading) {
+    return (
+      <div className="space-y-3 pt-3">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </div>
+    );
+  }
+
+  if (settingsQuery.isError) {
+    return (
+      <div className="pt-3">
+        <Alert variant="danger">
+          <AlertTitle>Could not load settings</AlertTitle>
+          <AlertDescription className="space-y-3">
+            <p>{errorMessage(settingsQuery.error, 'Please try again.')}</p>
+            <Button variant="outline" size="sm" onClick={() => void settingsQuery.refetch()}>
+              Try again
+            </Button>
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  const settings = settingsQuery.data;
+  const approval = settings?.selfJoin === 'approval';
+  const roles = (rolesQuery.data ?? []).filter((role) => role.code !== 'organization_administrator');
+
+  return (
+    <Card className="mt-3">
+      <CardHeader>
+        <CardTitle>Join settings</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-800">Require approval for new members</p>
+            <p className="mt-1 text-sm text-slate-500">
+              {approval
+                ? 'People who register with the organization key wait for an administrator to approve them before accessing data.'
+                : 'People who register with the organization key join immediately with the default role below.'}
+            </p>
+          </div>
+          <Switch
+            checked={approval}
+            disabled={updateMutation.isPending}
+            onCheckedChange={(checked) =>
+              updateMutation.mutate({ selfJoin: checked ? 'approval' : 'open' })
+            }
+            aria-label="Require approval for new members"
+          />
+        </div>
+
+        <div className="border-t border-slate-100 pt-4">
+          <FormField
+            id="default-role"
+            label="Default role for new members"
+            hint="Applied to people who register with the organization key. It can never be an administrator role."
+          >
+            <Select
+              value={settings?.defaultRole}
+              disabled={updateMutation.isPending}
+              onValueChange={(value) => updateMutation.mutate({ defaultRole: value })}
+            >
+              <SelectTrigger id="default-role" aria-label="Default role for new members">
+                <SelectValue placeholder="Choose a role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((role) => (
+                  <SelectItem key={role.id} value={role.code}>
+                    {role.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FormField>
+        </div>
       </CardContent>
     </Card>
   );

@@ -31,7 +31,7 @@ export function AuthSplash() {
         accessKey: accessKey.trim(),
         next: searchParams.get('next') ?? undefined,
       };
-      navigate('/login/account', { state });
+      navigate('/login/choice', { state });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Unable to verify this key. Please try again.');
     } finally {
@@ -63,6 +63,9 @@ export function AuthSplash() {
           <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">
             Sign in to your farm organization to coordinate teams, track field work, and keep every
             season moving.
+          </p>
+          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.35em] text-brand-700">
+            Track. Advise. Connect. Grow.
           </p>
           <div className="mt-8 flex flex-wrap gap-3 text-sm font-medium text-slate-600">
             <span className="rounded-full border border-slate-200 px-3 py-2">Tasks &amp; teams</span>

@@ -26,6 +26,7 @@ export interface RegisterInput {
 export interface OrganizationAccess {
   id: string;
   name: string;
+  joinMode?: 'open' | 'approval';
 }
 
 export interface VerifiedOrganizationState {

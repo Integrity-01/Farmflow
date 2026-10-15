@@ -38,6 +38,8 @@ httpOnly cookie (7-day lifetime).
 | GET | `/api/auth/me` | Bearer | Current user profile |
 | POST | `/api/auth/forgot-password` | — | Send password reset email |
 | POST | `/api/auth/reset-password` | — | Set new password from reset token |
+| GET | `/api/organizations/settings` | Bearer | New-member join settings (admin) |
+| PATCH | `/api/organizations/settings` | Bearer | Update `selfJoin` / `defaultRole` (admin) |
 | GET | `/api/farms` | Bearer | List farms (role-aware, filtered/paginated) |
 | GET | `/api/farms/managers` | Bearer | Active farm managers & admins |
 | POST | `/api/farms` | Bearer+ | Create a farm |
@@ -99,18 +101,20 @@ Content-Type: application/json
 200
 {
   "organization": {
-    "id": "…", "name": "Green Valley Farms"
-  },
-  "accessToken": "eyJhbGciOiJIUzI1NiIs…"
+    "id": "…", "name": "Green Valley Farms", "joinMode": "open"
+  }
 }
 ```
 
-The key verification endpoint returns `{ organization: { id, name } }`; the
-key must be sent again with account creation or sign-in and is checked against
-that organization by the API. Login requires an active membership. New
-registrations become active field officers. `POST /api/auth/organizations`
-creates the organization and its administrator and returns an initial
-`accessKey` once for the administrator to save/share.
+The key verification endpoint returns `{ organization: { id, name, joinMode } }`
+where `joinMode` is `open` (registrations join immediately with the
+organization's default role) or `approval` (registrations are created
+`pending` and wait for an administrator). The key must be sent again with
+account creation or sign-in and is checked against that organization by the
+API — the key never replaces user credentials or grants privileged access on
+its own. `POST /api/auth/organizations` creates the organization and its
+administrator and returns an initial `accessKey` once for the
+administrator to save/share.
 
 The `Set-Cookie: ff_refresh=…` header carries the refresh session.
 
@@ -118,10 +122,14 @@ The `Set-Cookie: ff_refresh=…` header carries the refresh session.
   revoked, or belongs to a suspended organization.
 - Register: requires the matching `organizationId` and `accessKey`;
   `409 EMAIL_TAKEN` if the email exists. Password must be ≥ 8 chars
-  (`400 VALIDATION_ERROR`). Rate limited to 5 accounts/hour/IP.
+  (`400 VALIDATION_ERROR`). The membership is created `active` with the
+  organization's default role when `joinMode` is `open`, or `pending` when it
+  is `approval`. Rate limited to 5 accounts/hour/IP.
 - Login: requires the matching `organizationId` and `accessKey`;
   `401 INVALID_CREDENTIALS`, `403 ACCOUNT_DISABLED`, or
-  `403 ORGANIZATION_ACCESS_REQUIRED`. Rate limited to 8 attempts/15 min/IP.
+  `403 ORGANIZATION_ACCESS_REQUIRED` (no membership at all). Memberships in
+  `pending` state can sign in but are shown an approval-pending screen until
+  an administrator activates them. Rate limited to 8 attempts/15 min/IP.
 - Refresh: reads `ff_refresh`, rotates the refresh token and returns a new
   `accessToken` + `user`. `401 UNAUTHORIZED` when absent/expired/revoked.
 - Logout: revokes the session server-side and clears the cookie (`204`).
@@ -131,8 +139,10 @@ The `Set-Cookie: ff_refresh=…` header carries the refresh session.
 
 ### Roles
 
-`field_worker` < `supervisor` < `farm_manager` < `administrator`.
-Protected endpoints add a role gate; protected routes check the access token
+`field_officer` < `supervisor` < `farm_manager` < `organization_administrator`,
+plus administrator-created custom roles. Beyond the coarse route gate,
+endpoints check DB-backed role permissions (e.g. `farm:create`,
+`member:approve`); protected routes check the access token
 (`401 UNAUTHORIZED` if invalid/expired, `403 FORBIDDEN` if the role is too low).
 The first administrator is created explicitly with its organization; member
 accounts receive their role through organization membership.

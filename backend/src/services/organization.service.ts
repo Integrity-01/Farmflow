@@ -160,6 +160,33 @@ async function findRole(roleId: string, orgId: string): Promise<RoleRow | null> 
   return res.rows[0] ?? null;
 }
 
+export type SelfJoinMode = 'open' | 'approval';
+
+export interface OrgJoinSettings {
+  selfJoin: SelfJoinMode;
+  defaultRole: string;
+}
+
+export const DEFAULT_JOIN_SETTINGS: OrgJoinSettings = {
+  selfJoin: 'open',
+  defaultRole: 'field_officer',
+};
+
+export function parseJoinSettings(raw: string | null): OrgJoinSettings {
+  if (!raw) return { ...DEFAULT_JOIN_SETTINGS };
+  try {
+    const parsed = JSON.parse(raw) as { selfJoin?: unknown; defaultRole?: unknown };
+    const selfJoin: SelfJoinMode = parsed.selfJoin === 'approval' ? 'approval' : 'open';
+    const defaultRole =
+      typeof parsed.defaultRole === 'string' && parsed.defaultRole.trim().length > 0
+        ? parsed.defaultRole.trim()
+        : DEFAULT_JOIN_SETTINGS.defaultRole;
+    return { selfJoin, defaultRole };
+  } catch {
+    return { ...DEFAULT_JOIN_SETTINGS };
+  }
+}
+
 async function countActiveAdmins(orgId: string): Promise<number> {
   const res = await pool.query<{ count: string }>(
     `SELECT COUNT(*)::text AS count
@@ -242,6 +269,62 @@ export const organizationService = {
       [uid(), orgId, hashToken(key), actor.id],
     );
     return { accessKey: key };
+  },
+
+  async getJoinSettings(orgId: string): Promise<OrgJoinSettings> {
+    const res = await pool.query<{ settings: string | null }>(
+      `SELECT settings FROM organizations WHERE id = $1`,
+      [orgId],
+    );
+    if (res.rows.length === 0) {
+      throw new AppError(404, 'This organization could not be found.', 'NOT_FOUND');
+    }
+    return parseJoinSettings(res.rows[0].settings);
+  },
+
+  async getSettingsForActor(actor: AuthUser): Promise<OrgJoinSettings> {
+    const org = await requireOrgPermission(actor, 'org:update');
+    return organizationService.getJoinSettings(org.id);
+  },
+
+  async updateSettings(
+    actor: AuthUser,
+    input: { selfJoin?: SelfJoinMode; defaultRole?: string },
+  ): Promise<OrgJoinSettings> {
+    const org = await requireOrgPermission(actor, 'org:update');
+    const current = await organizationService.getJoinSettings(org.id);
+
+    let defaultRole = current.defaultRole;
+    if (input.defaultRole !== undefined) {
+      const roleRes = await pool.query<RoleRow>(
+        `SELECT id, code, name, description, is_system
+         FROM roles
+         WHERE code = $1 AND (organization_id IS NULL OR organization_id = $2)`,
+        [input.defaultRole.trim(), org.id],
+      );
+      const role = roleRes.rows[0];
+      if (!role) {
+        throw new AppError(400, 'Please choose a valid role.', 'INVALID_REFERENCE');
+      }
+      if (role.code === 'organization_administrator') {
+        throw new AppError(
+          400,
+          'New members cannot be administrators by default.',
+          'INVALID_REFERENCE',
+        );
+      }
+      defaultRole = role.code;
+    }
+
+    const settings: OrgJoinSettings = {
+      selfJoin: input.selfJoin ?? current.selfJoin,
+      defaultRole,
+    };
+    await pool.query(
+      `UPDATE organizations SET settings = $1, updated_at = now() WHERE id = $2`,
+      [JSON.stringify(settings), org.id],
+    );
+    return settings;
   },
 
   async listRoles(actor: AuthUser): Promise<RoleItem[]> {

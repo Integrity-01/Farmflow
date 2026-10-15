@@ -17,6 +17,16 @@ export interface UpdateMemberInput {
   status?: 'active' | 'suspended';
 }
 
+export interface OrgJoinSettings {
+  selfJoin: 'open' | 'approval';
+  defaultRole: string;
+}
+
+export interface UpdateOrgSettingsInput {
+  selfJoin?: 'open' | 'approval';
+  defaultRole?: string;
+}
+
 export const organizationApi = {
   async listMine(): Promise<OrgSummary[]> {
     const result = await api.get<{ orgs: OrgSummary[] }>('/organizations/mine');
@@ -41,6 +51,16 @@ export const organizationApi = {
   async listRoles(): Promise<OrgRole[]> {
     const result = await api.get<{ roles: OrgRole[] }>('/organizations/roles');
     return result.roles;
+  },
+
+  async getSettings(): Promise<OrgJoinSettings> {
+    const result = await api.get<{ settings: OrgJoinSettings }>('/organizations/settings');
+    return result.settings;
+  },
+
+  async updateSettings(input: UpdateOrgSettingsInput): Promise<OrgJoinSettings> {
+    const result = await api.patch<{ settings: OrgJoinSettings }>('/organizations/settings', input);
+    return result.settings;
   },
 
   async listMembers(): Promise<OrganizationMember[]> {

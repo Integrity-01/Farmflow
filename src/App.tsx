@@ -24,6 +24,7 @@ import { Team } from '@/pages/Team';
 import { Weather } from '@/pages/Weather';
 import { Workers } from '@/pages/Workers';
 import { AcceptInvitation } from '@/pages/auth/AcceptInvitation';
+import { EntryChoice } from '@/pages/auth/EntryChoice';
 import { ForgotPassword } from '@/pages/auth/ForgotPassword';
 import { AuthSplash } from '@/pages/auth/AuthSplash';
 import { Login } from '@/pages/auth/Login';
@@ -46,6 +47,14 @@ export default function App() {
           element={
             <GuestGuard>
               <AuthSplash />
+            </GuestGuard>
+          }
+        />
+        <Route
+          path="/login/choice"
+          element={
+            <GuestGuard>
+              <EntryChoice />
             </GuestGuard>
           }
         />

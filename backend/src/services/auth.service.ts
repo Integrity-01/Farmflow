@@ -188,12 +188,21 @@ async function findUserByEmail(email: string): Promise<UserRow | null> {
 }
 
 export const authService = {
-  async verifyOrganizationKey(accessKey: string): Promise<{ id: string; name: string }> {
+  async verifyOrganizationKey(accessKey: string): Promise<{
+    id: string;
+    name: string;
+    joinMode: 'open' | 'approval';
+  }> {
     const organization = await getOrganizationForAccessKey(accessKey);
     if (!organization) {
       throw new AppError(400, 'This organization key is invalid or has expired.', 'INVALID_ACCESS_KEY');
     }
-    return { id: organization.organization_id, name: organization.organization_name };
+    const settings = await organizationService.getJoinSettings(organization.organization_id);
+    return {
+      id: organization.organization_id,
+      name: organization.organization_name,
+      joinMode: settings.selfJoin,
+    };
   },
 
   async register(
@@ -219,19 +228,32 @@ export const authService = {
       throw new AppError(409, 'An account with this email already exists.', 'EMAIL_TAKEN');
     }
 
+    const joinSettings = await organizationService.getJoinSettings(organization.organization_id);
+    const membershipStatus = joinSettings.selfJoin === 'approval' ? 'pending' : 'active';
+
     const passwordHash = await bcrypt.hash(input.password, 10);
     const id = uid();
     const role: UserRole = 'field_officer';
     const name = input.name.trim();
     const phone = input.phone?.trim() || null;
     const roleResult = await pool.query<{ id: string }>(
-      `SELECT id FROM roles WHERE code = $1 AND organization_id IS NULL`,
-      [role],
+      `SELECT id FROM roles
+       WHERE code = $1 AND (organization_id IS NULL OR organization_id = $2)
+       LIMIT 1`,
+      [joinSettings.defaultRole, organization.organization_id],
     );
-    const roleId = roleResult.rows[0]?.id;
+    let roleId = roleResult.rows[0]?.id;
+    if (!roleId) {
+      const fallback = await pool.query<{ id: string }>(
+        `SELECT id FROM roles WHERE code = 'field_officer' AND organization_id IS NULL`,
+      );
+      roleId = fallback.rows[0]?.id;
+    }
     if (!roleId) {
       throw new AppError(500, 'The field officer role is not configured.', 'ROLE_MISSING');
     }
+
+    const joinedAt = membershipStatus === 'active' ? new Date() : null;
 
     await pool.withTransaction(async (db) => {
       await db.query(
@@ -242,8 +264,8 @@ export const authService = {
       await db.query(
         `INSERT INTO organization_memberships
            (id, organization_id, user_id, role_id, status, joined_at, decided_at)
-         VALUES ($1, $2, $3, $4, 'active', now(), now())`,
-        [uid(), organization.organization_id, id, roleId],
+         VALUES ($1, $2, $3, $4, $5, $6, $6)`,
+        [uid(), organization.organization_id, id, roleId, membershipStatus, joinedAt],
       );
       await db.query(`INSERT IGNORE INTO notification_preferences (user_id) VALUES ($1)`, [id]);
       await db.query(`UPDATE access_keys SET last_used_at = now() WHERE id = $1`, [organization.key_id]);
@@ -379,16 +401,16 @@ export const authService = {
       throw new AppError(403, 'This account has been disabled.', 'ACCOUNT_DISABLED');
     }
 
-    const membership = await pool.query<{ id: string }>(
-      `SELECT m.id
+    const membership = await pool.query<{ id: string; status: string }>(
+      `SELECT m.id, m.status
        FROM organization_memberships m
-       WHERE m.organization_id = $1 AND m.user_id = $2 AND m.status = 'active'`,
+       WHERE m.organization_id = $1 AND m.user_id = $2 AND m.status IN ('active', 'pending')`,
       [organization.organization_id, user.id],
     );
     if (!membership.rows[0]) {
       throw new AppError(
         403,
-        'This account does not have active access to the verified organization.',
+        'This account does not have access to the verified organization.',
         'ORGANIZATION_ACCESS_REQUIRED',
       );
     }
