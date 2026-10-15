@@ -25,7 +25,9 @@ import { Weather } from '@/pages/Weather';
 import { Workers } from '@/pages/Workers';
 import { AcceptInvitation } from '@/pages/auth/AcceptInvitation';
 import { ForgotPassword } from '@/pages/auth/ForgotPassword';
+import { AuthSplash } from '@/pages/auth/AuthSplash';
 import { Login } from '@/pages/auth/Login';
+import { NewOrganization } from '@/pages/auth/NewOrganization';
 import { Register } from '@/pages/auth/Register';
 import { ResetPassword } from '@/pages/auth/ResetPassword';
 
@@ -43,6 +45,14 @@ export default function App() {
           path="/login"
           element={
             <GuestGuard>
+              <AuthSplash />
+            </GuestGuard>
+          }
+        />
+        <Route
+          path="/login/account"
+          element={
+            <GuestGuard>
               <Login />
             </GuestGuard>
           }
@@ -52,6 +62,14 @@ export default function App() {
           element={
             <GuestGuard>
               <Register />
+            </GuestGuard>
+          }
+        />
+        <Route
+          path="/new-organization"
+          element={
+            <GuestGuard>
+              <NewOrganization />
             </GuestGuard>
           }
         />

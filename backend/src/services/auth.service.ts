@@ -78,6 +78,29 @@ async function withOrgs(user: AuthUser, sessionId?: string): Promise<AuthUser> {
 
 const REFRESH_COOKIE_NAME = 'ff_refresh';
 
+interface AccessKeyOrgRow {
+  key_id: string;
+  organization_id: string;
+  organization_name: string;
+}
+
+async function getOrganizationForAccessKey(accessKey: string): Promise<AccessKeyOrgRow | null> {
+  const result = await pool.query<AccessKeyOrgRow>(
+    `SELECT k.id AS key_id, o.id AS organization_id, o.name AS organization_name
+     FROM access_keys k
+     JOIN organizations o ON o.id = k.organization_id
+     WHERE k.code_hash = $1 AND k.revoked_at IS NULL
+       AND (k.expires_at IS NULL OR k.expires_at > now())
+       AND o.status = 'active'`,
+    [hashToken(accessKey.trim())],
+  );
+  return result.rows[0] ?? null;
+}
+
+async function markAccessKeyUsed(keyId: string): Promise<void> {
+  await pool.query(`UPDATE access_keys SET last_used_at = now() WHERE id = $1`, [keyId]);
+}
+
 export const authSession = {
   REFRESH_COOKIE_NAME,
 
@@ -165,57 +188,81 @@ async function findUserByEmail(email: string): Promise<UserRow | null> {
 }
 
 export const authService = {
+  async verifyOrganizationKey(accessKey: string): Promise<{ id: string; name: string }> {
+    const organization = await getOrganizationForAccessKey(accessKey);
+    if (!organization) {
+      throw new AppError(400, 'This organization key is invalid or has expired.', 'INVALID_ACCESS_KEY');
+    }
+    return { id: organization.organization_id, name: organization.organization_name };
+  },
+
   async register(
-    input: { name: string; email: string; password: string; phone?: string },
+    input: {
+      name: string;
+      email: string;
+      password: string;
+      phone?: string;
+      organizationId: string;
+      accessKey: string;
+    },
     req: { ip?: string; userAgent?: string },
   ): Promise<AuthResult> {
     const email = input.email.trim().toLowerCase();
+
+    const organization = await getOrganizationForAccessKey(input.accessKey);
+    if (!organization || organization.organization_id !== input.organizationId) {
+      throw new AppError(400, 'This organization key is invalid or has expired.', 'INVALID_ACCESS_KEY');
+    }
 
     const existing = await findUserByEmail(email);
     if (existing) {
       throw new AppError(409, 'An account with this email already exists.', 'EMAIL_TAKEN');
     }
 
-    const countResult = await pool.query<{ count: string }>('SELECT COUNT(*)::text AS count FROM users');
-    const isFirstUser = Number(countResult.rows[0].count) === 0;
-    const role: UserRole = isFirstUser ? 'organization_administrator' : 'field_officer';
-
     const passwordHash = await bcrypt.hash(input.password, 10);
     const id = uid();
-    await pool.query(
-      `INSERT INTO users (id, name, email, phone, password_hash, role)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [id, input.name.trim(), email, input.phone?.trim() || null, passwordHash, role],
+    const role: UserRole = 'field_officer';
+    const name = input.name.trim();
+    const phone = input.phone?.trim() || null;
+    const roleResult = await pool.query<{ id: string }>(
+      `SELECT id FROM roles WHERE code = $1 AND organization_id IS NULL`,
+      [role],
     );
-    const user = toAuthUser({ id, name: input.name.trim(), email, phone: input.phone?.trim() || null, role, avatar_url: null, password_hash: passwordHash, is_active: true });
-    const { refreshToken, sessionId } = await authSession.createSession(user.id, req);
-
-    await pool.query(
-      `INSERT IGNORE INTO notification_preferences (user_id) VALUES ($1)`,
-      [user.id],
-    );
-
-    if (isFirstUser) {
-      const orgId = uid();
-      await pool.query(
-        `INSERT INTO organizations (id, name, created_by)
-         VALUES ($1, $2, $3)`,
-        [orgId, `${user.name}'s Organization`, user.id],
-      );
-      const roleResult = await pool.query<{ id: string }>(
-        `SELECT id FROM roles WHERE code = $1 AND organization_id IS NULL`,
-        ['organization_administrator'],
-      );
-      const roleRow = roleResult.rows[0];
-      if (roleRow) {
-        await pool.query(
-          `INSERT INTO organization_memberships
-             (id, organization_id, user_id, role_id, status, joined_at)
-           VALUES ($1, $2, $3, $4, 'active', now())`,
-          [uid(), orgId, user.id, roleRow.id],
-        );
-      }
+    const roleId = roleResult.rows[0]?.id;
+    if (!roleId) {
+      throw new AppError(500, 'The field officer role is not configured.', 'ROLE_MISSING');
     }
+
+    await pool.withTransaction(async (db) => {
+      await db.query(
+        `INSERT INTO users (id, name, email, phone, password_hash, role)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [id, name, email, phone, passwordHash, role],
+      );
+      await db.query(
+        `INSERT INTO organization_memberships
+           (id, organization_id, user_id, role_id, status, joined_at, decided_at)
+         VALUES ($1, $2, $3, $4, 'active', now(), now())`,
+        [uid(), organization.organization_id, id, roleId],
+      );
+      await db.query(`INSERT IGNORE INTO notification_preferences (user_id) VALUES ($1)`, [id]);
+      await db.query(`UPDATE access_keys SET last_used_at = now() WHERE id = $1`, [organization.key_id]);
+    });
+    const user = toAuthUser({
+      id,
+      name,
+      email,
+      phone,
+      role,
+      avatar_url: null,
+      password_hash: passwordHash,
+      is_active: true,
+    });
+    const { refreshToken, sessionId } = await authSession.createSession(user.id, req);
+    await pool.query(
+      `UPDATE sessions SET active_organization_id = $1 WHERE id = $2`,
+      [organization.organization_id, sessionId],
+    );
 
     const accessToken = signAccessToken({ sub: user.id, role: user.role, sid: sessionId });
 
@@ -225,11 +272,101 @@ export const authService = {
     return { user: await withOrgs(user, sessionId), accessToken, refreshToken };
   },
 
+  async createOrganization(
+    input: {
+      organizationName: string;
+      name: string;
+      email: string;
+      password: string;
+      phone?: string;
+    },
+    req: { ip?: string; userAgent?: string },
+  ): Promise<AuthResult & { accessKey: string; organization: { id: string; name: string } }> {
+    const email = input.email.trim().toLowerCase();
+    if (await findUserByEmail(email)) {
+      throw new AppError(409, 'An account with this email already exists.', 'EMAIL_TAKEN');
+    }
+
+    const organizationId = uid();
+    const userId = uid();
+    const role: UserRole = 'organization_administrator';
+    const name = input.name.trim();
+    const phone = input.phone?.trim() || null;
+    const organizationName = input.organizationName.trim();
+    const passwordHash = await bcrypt.hash(input.password, 10);
+    const accessKey = createOpaqueToken();
+    const roleResult = await pool.query<{ id: string }>(
+      `SELECT id FROM roles WHERE code = $1 AND organization_id IS NULL`,
+      [role],
+    );
+    const roleId = roleResult.rows[0]?.id;
+    if (!roleId) {
+      throw new AppError(500, 'The organization administrator role is not configured.', 'ROLE_MISSING');
+    }
+
+    await pool.withTransaction(async (db) => {
+      await db.query(
+        `INSERT INTO users (id, name, email, phone, password_hash, role)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [userId, name, email, phone, passwordHash, role],
+      );
+      await db.query(
+        `INSERT INTO organizations (id, name, created_by)
+         VALUES ($1, $2, $3)`,
+        [organizationId, organizationName, userId],
+      );
+      await db.query(
+        `INSERT INTO organization_memberships
+           (id, organization_id, user_id, role_id, status, joined_at, decided_at)
+         VALUES ($1, $2, $3, $4, 'active', now(), now())`,
+        [uid(), organizationId, userId, roleId],
+      );
+      await db.query(
+        `INSERT INTO access_keys (id, organization_id, code_hash, label, created_by)
+         VALUES ($1, $2, $3, 'Organization key', $4)`,
+        [uid(), organizationId, hashToken(accessKey), userId],
+      );
+      await db.query(`INSERT IGNORE INTO notification_preferences (user_id) VALUES ($1)`, [userId]);
+    });
+
+    const user = toAuthUser({
+      id: userId,
+      name,
+      email,
+      phone,
+      role,
+      avatar_url: null,
+      password_hash: passwordHash,
+      is_active: true,
+    });
+    const { refreshToken, sessionId } = await authSession.createSession(userId, req);
+    await pool.query(
+      `UPDATE sessions SET active_organization_id = $1 WHERE id = $2`,
+      [organizationId, sessionId],
+    );
+    const accessToken = signAccessToken({ sub: userId, role, sid: sessionId });
+
+    const welcome = emailTemplates.welcome(name);
+    sendEmail({ to: email, subject: welcome.subject, html: welcome.html }).catch(() => {});
+
+    return {
+      user: await withOrgs(user, sessionId),
+      accessToken,
+      refreshToken,
+      accessKey,
+      organization: { id: organizationId, name: organizationName },
+    };
+  },
+
   async login(
     emailInput: string,
     password: string,
-    req: { ip?: string; userAgent?: string },
+    req: { organizationId: string; accessKey: string; ip?: string; userAgent?: string },
   ): Promise<AuthResult> {
+    const organization = await getOrganizationForAccessKey(req.accessKey);
+    if (!organization || organization.organization_id !== req.organizationId) {
+      throw new AppError(400, 'This organization key is invalid or has expired.', 'INVALID_ACCESS_KEY');
+    }
     const email = emailInput.trim().toLowerCase();
     const user = await findUserByEmail(email);
 
@@ -242,9 +379,28 @@ export const authService = {
       throw new AppError(403, 'This account has been disabled.', 'ACCOUNT_DISABLED');
     }
 
+    const membership = await pool.query<{ id: string }>(
+      `SELECT m.id
+       FROM organization_memberships m
+       WHERE m.organization_id = $1 AND m.user_id = $2 AND m.status = 'active'`,
+      [organization.organization_id, user.id],
+    );
+    if (!membership.rows[0]) {
+      throw new AppError(
+        403,
+        'This account does not have active access to the verified organization.',
+        'ORGANIZATION_ACCESS_REQUIRED',
+      );
+    }
+
     await pool.query(`UPDATE users SET last_login_at = now() WHERE id = $1`, [user.id]);
+    await markAccessKeyUsed(organization.key_id);
 
     const { refreshToken, sessionId } = await authSession.createSession(user.id, req);
+    await pool.query(
+      `UPDATE sessions SET active_organization_id = $1 WHERE id = $2`,
+      [organization.organization_id, sessionId],
+    );
     const authUser = await withOrgs(toAuthUser(user), sessionId);
     const accessToken = signAccessToken({ sub: user.id, role: user.role, sid: sessionId });
 

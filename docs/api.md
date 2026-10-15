@@ -29,8 +29,10 @@ httpOnly cookie (7-day lifetime).
 | --- | --- | --- | --- |
 | GET | `/api` | — | API metadata |
 | GET | `/api/health` | — | Liveness + database readiness |
-| POST | `/api/auth/register` | — | Create account (first user becomes administrator) |
-| POST | `/api/auth/login` | — | Sign in |
+| POST | `/api/auth/verify-organization-key` | — | Verify an organization key before authentication |
+| POST | `/api/auth/register` | — | Create an account in the verified organization |
+| POST | `/api/auth/login` | — | Sign in to the verified organization |
+| POST | `/api/auth/organizations` | — | Create an organization, administrator account, and initial key |
 | POST | `/api/auth/refresh` | — | Rotate session using `ff_refresh` cookie |
 | POST | `/api/auth/logout` | — | Revoke session, clear cookie |
 | GET | `/api/auth/me` | Bearer | Current user profile |
@@ -87,29 +89,39 @@ creator, or the assigned worker.
 ### Authentication
 
 ```http
-POST /api/auth/register
+POST /api/auth/verify-organization-key
 Content-Type: application/json
 
-{ "name": "Amara Okafor", "email": "amara@farm.example", "password": "hunter2farm", "phone": "+2348000000000" }
+{ "accessKey": "organization-key" }
 ```
 
 ```json
-201
+200
 {
-  "user": {
-    "id": "…", "name": "Amara Okafor", "email": "amara@farm.example",
-    "phone": "+2348000000000", "role": "administrator", "avatarUrl": null
+  "organization": {
+    "id": "…", "name": "Green Valley Farms"
   },
   "accessToken": "eyJhbGciOiJIUzI1NiIs…"
 }
 ```
 
+The key verification endpoint returns `{ organization: { id, name } }`; the
+key must be sent again with account creation or sign-in and is checked against
+that organization by the API. Login requires an active membership. New
+registrations become active field officers. `POST /api/auth/organizations`
+creates the organization and its administrator and returns an initial
+`accessKey` once for the administrator to save/share.
+
 The `Set-Cookie: ff_refresh=…` header carries the refresh session.
 
-- Register: `409 EMAIL_TAKEN` if the email exists. Password must be ≥ 8 chars
+- Verify key: `400 INVALID_ACCESS_KEY` when the key is invalid, expired,
+  revoked, or belongs to a suspended organization.
+- Register: requires the matching `organizationId` and `accessKey`;
+  `409 EMAIL_TAKEN` if the email exists. Password must be ≥ 8 chars
   (`400 VALIDATION_ERROR`). Rate limited to 5 accounts/hour/IP.
-- Login: `401 INVALID_CREDENTIALS` (generic — never reveals which field was
-  wrong), `403 ACCOUNT_DISABLED`. Rate limited to 8 attempts/15 min/IP.
+- Login: requires the matching `organizationId` and `accessKey`;
+  `401 INVALID_CREDENTIALS`, `403 ACCOUNT_DISABLED`, or
+  `403 ORGANIZATION_ACCESS_REQUIRED`. Rate limited to 8 attempts/15 min/IP.
 - Refresh: reads `ff_refresh`, rotates the refresh token and returns a new
   `accessToken` + `user`. `401 UNAUTHORIZED` when absent/expired/revoked.
 - Logout: revokes the session server-side and clears the cookie (`204`).
@@ -122,7 +134,8 @@ The `Set-Cookie: ff_refresh=…` header carries the refresh session.
 `field_worker` < `supervisor` < `farm_manager` < `administrator`.
 Protected endpoints add a role gate; protected routes check the access token
 (`401 UNAUTHORIZED` if invalid/expired, `403 FORBIDDEN` if the role is too low).
-The first registered account is auto-assigned `administrator`.
+The first administrator is created explicitly with its organization; member
+accounts receive their role through organization membership.
 
 ### Farms
 

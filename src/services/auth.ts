@@ -18,16 +18,64 @@ export interface RegisterInput {
   name: string;
   email: string;
   password: string;
+  organizationId: string;
+  accessKey: string;
+  phone?: string;
+}
+
+export interface OrganizationAccess {
+  id: string;
+  name: string;
+}
+
+export interface VerifiedOrganizationState {
+  organization: OrganizationAccess;
+  accessKey: string;
+  next?: string;
+}
+
+export interface CreateOrganizationInput {
+  organizationName: string;
+  name: string;
+  email: string;
+  password: string;
   phone?: string;
 }
 
 export const authApi = {
-  async login(email: string, password: string): Promise<AuthSession> {
-    return api.post<AuthSession>('/auth/login', { email, password });
+  async verifyOrganizationKey(accessKey: string): Promise<OrganizationAccess> {
+    const result = await api.post<{ organization: OrganizationAccess }>(
+      '/auth/verify-organization-key',
+      { accessKey },
+    );
+    return result.organization;
+  },
+
+  async login(
+    email: string,
+    password: string,
+    organizationId: string,
+    accessKey: string,
+  ): Promise<AuthSession> {
+    return api.post<AuthSession>('/auth/login', {
+      email,
+      password,
+      organizationId,
+      accessKey,
+    });
   },
 
   async register(input: RegisterInput): Promise<AuthSession> {
     return api.post<AuthSession>('/auth/register', input);
+  },
+
+  async createOrganization(input: CreateOrganizationInput): Promise<
+    AuthSession & { accessKey: string; organization: OrganizationAccess }
+  > {
+    return api.post<AuthSession & { accessKey: string; organization: OrganizationAccess }>(
+      '/auth/organizations',
+      input,
+    );
   },
 
   async refresh(): Promise<AuthSession> {

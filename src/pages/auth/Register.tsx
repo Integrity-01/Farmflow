@@ -1,18 +1,20 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { ApiError } from '@/services/api';
-import { authApi } from '@/services/auth';
+import { authApi, type VerifiedOrganizationState } from '@/services/auth';
 import { useAuthStore } from '@/store/auth.store';
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const orgState = location.state as VerifiedOrganizationState | null;
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -22,6 +24,11 @@ export function Register() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  if (!orgState || !orgState.organization?.id || !orgState.accessKey) {
+    return <Navigate to="/login" replace />;
+  }
+  const verifiedOrg = orgState;
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
@@ -48,9 +55,11 @@ export function Register() {
         email: email.trim(),
         phone: phone.trim() || undefined,
         password,
+        organizationId: verifiedOrg.organization.id,
+        accessKey: verifiedOrg.accessKey,
       });
       useAuthStore.getState().setSession(session.user, session.accessToken);
-      navigate('/', { replace: true });
+      navigate(verifiedOrg.next ?? '/', { replace: true });
     } catch (err) {
       const message = err instanceof ApiError ? err.message : 'Something went wrong. Please try again.';
       setError(message);
@@ -62,25 +71,20 @@ export function Register() {
   return (
     <AuthLayout
       title="Create your account"
-      subtitle="Set up FarmFlow for your farm in a minute."
+      subtitle={`Join ${verifiedOrg.organization.name} on FarmFlow.`}
       footer={
         <>
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-brand-700 hover:underline">
+          <Link to="/login/account" state={verifiedOrg} className="font-semibold text-brand-700 hover:underline">
             Sign in
+          </Link>
+          <span className="mx-2 text-slate-300">·</span>
+          <Link to="/login" className="font-semibold text-slate-600 hover:underline">
+            Change key
           </Link>
         </>
       }
     >
-      <Alert variant="info" className="mb-4">
-        <AlertTitle>First account = organization administrator</AlertTitle>
-        <AlertDescription>
-          The very first account created on a new FarmFlow instance becomes the
-          organization administrator and can manage the whole setup. Everyone
-          else joins by invitation or with an access key.
-        </AlertDescription>
-      </Alert>
-
       <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         {error ? (
           <Alert variant="danger">

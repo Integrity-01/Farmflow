@@ -1,25 +1,32 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { FormField } from '@/components/ui/FormField';
 import { Input } from '@/components/ui/Input';
 import { ApiError } from '@/services/api';
-import { authApi } from '@/services/auth';
+import { authApi, type VerifiedOrganizationState } from '@/services/auth';
 import { useAuthStore } from '@/store/auth.store';
 import { useToast } from '@/store/toast.store';
 
 export function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
-  const next = searchParams.get('next') ?? '/';
+  const orgState = location.state as VerifiedOrganizationState | null;
+  const next = searchParams.get('next') ?? orgState?.next ?? '/';
   const { toast } = useToast();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  if (!orgState || !orgState.organization?.id || !orgState.accessKey) {
+    return <Navigate to="/login" replace />;
+  }
+  const verifiedOrg = orgState;
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -32,7 +39,12 @@ export function Login() {
 
     setSubmitting(true);
     try {
-      const session = await authApi.login(email.trim(), password);
+      const session = await authApi.login(
+        email.trim(),
+        password,
+        verifiedOrg.organization.id,
+        verifiedOrg.accessKey,
+      );
       useAuthStore.getState().setSession(session.user, session.accessToken);
       const firstName = session.user.name.trim().split(/\s+/)[0] || 'there';
       toast({
@@ -57,12 +69,16 @@ export function Login() {
   return (
     <AuthLayout
       title="Welcome back"
-      subtitle="Sign in to manage your farm work."
+      subtitle={`Sign in to ${verifiedOrg.organization.name}.`}
       footer={
         <>
-          New to FarmFlow?{' '}
-          <Link to="/register" className="font-semibold text-brand-700 hover:underline">
+          New to {verifiedOrg.organization.name}?{' '}
+          <Link to="/register" state={verifiedOrg} className="font-semibold text-brand-700 hover:underline">
             Create an account
+          </Link>
+          <span className="mx-2 text-slate-300">·</span>
+          <Link to="/login" className="font-semibold text-slate-600 hover:underline">
+            Change key
           </Link>
         </>
       }

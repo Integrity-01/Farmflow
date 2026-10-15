@@ -1,6 +1,33 @@
 import type { NextFunction, Request, Response } from 'express';
 import { authService, authSession, REFRESH_COOKIE_OPTIONS } from '../services/auth.service.js';
 
+export async function verifyOrganizationKey(req: Request, res: Response, next: NextFunction) {
+  try {
+    const organization = await authService.verifyOrganizationKey(req.body.accessKey);
+    res.json({ organization });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function createOrganization(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await authService.createOrganization(req.body, {
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+    });
+    res.cookie(authSession.REFRESH_COOKIE_NAME, result.refreshToken, REFRESH_COOKIE_OPTIONS);
+    res.status(201).json({
+      user: result.user,
+      accessToken: result.accessToken,
+      accessKey: result.accessKey,
+      organization: result.organization,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await authService.register(req.body, {
@@ -17,6 +44,8 @@ export async function register(req: Request, res: Response, next: NextFunction) 
 export async function login(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await authService.login(req.body.email, req.body.password, {
+      organizationId: req.body.organizationId,
+      accessKey: req.body.accessKey,
       ip: req.ip,
       userAgent: req.get('user-agent'),
     });
