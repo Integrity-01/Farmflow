@@ -33,6 +33,15 @@ export const verifyOrganizationKeySchema = z.object({
   accessKey: z.string().trim().min(1, 'An organization key is required.').max(200),
 });
 
+export const adminLoginSchema = z.object({
+  adminId: z
+    .string()
+    .trim()
+    .min(3, 'Please enter your Admin ID.')
+    .max(40, 'That Admin ID is too long.'),
+  password: z.string().min(1, 'Please enter your password.').max(128),
+});
+
 export const createOrganizationSchema = z.object({
   organizationName: z.string().trim().min(2, 'Enter an organization name.').max(255),
   name: z.string().trim().min(2, 'Please enter a full name.').max(120),

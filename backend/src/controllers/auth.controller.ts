@@ -21,6 +21,7 @@ export async function createOrganization(req: Request, res: Response, next: Next
       user: result.user,
       accessToken: result.accessToken,
       accessKey: result.accessKey,
+      adminId: result.adminId,
       organization: result.organization,
     });
   } catch (error) {
@@ -46,6 +47,19 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     const result = await authService.login(req.body.email, req.body.password, {
       organizationId: req.body.organizationId,
       accessKey: req.body.accessKey,
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+    });
+    res.cookie(authSession.REFRESH_COOKIE_NAME, result.refreshToken, REFRESH_COOKIE_OPTIONS);
+    res.json({ user: result.user, accessToken: result.accessToken });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function adminLogin(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await authService.adminLogin(req.body.adminId, req.body.password, {
       ip: req.ip,
       userAgent: req.get('user-agent'),
     });

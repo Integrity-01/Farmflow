@@ -3,6 +3,8 @@ import { env } from '../config/env.js';
 import { AppError } from '../utils/AppError.js';
 import { createOpaqueToken, hashToken } from '../utils/tokens.js';
 import { getRolePermissions } from './permission.service.js';
+import { adminService } from './admin.service.js';
+import { recordAudit } from './audit.service.js';
 import { sendEmail } from './email.service.js';
 import { emailTemplates } from './email/templates.js';
 import type { AuthUser } from '../types/auth.js';
@@ -89,6 +91,16 @@ export interface RoleItem {
   name: string;
   description: string | null;
   system: boolean;
+}
+
+export interface AdminCredentialItem {
+  id: string;
+  adminId: string;
+  userId: string;
+  name: string;
+  email: string;
+  status: 'active' | 'disabled';
+  createdAt: string;
 }
 
 const MEMBER_SELECT = `
@@ -271,6 +283,116 @@ export const organizationService = {
     return { accessKey: key };
   },
 
+  /**
+   * Rotate the organization access key: revoke every currently-active key and
+   * issue a single fresh one. Existing users keep their sessions; only the
+   * shared join key changes. Requires access-key management permission.
+   */
+  async rotateAccessKey(actor: AuthUser): Promise<{ accessKey: string }> {
+    const org = await requireOrgPermission(actor, 'access_key:manage');
+    const key = createOpaqueToken();
+    await pool.withTransaction(async (db) => {
+      await db.query(
+        `UPDATE access_keys SET revoked_at = now() WHERE organization_id = $1 AND revoked_at IS NULL`,
+        [org.id],
+      );
+      await db.query(
+        `INSERT INTO access_keys (id, organization_id, code_hash, label, created_by)
+         VALUES ($1, $2, $3, 'Organization key', $4)`,
+        [uid(), org.id, hashToken(key), actor.id],
+      );
+    });
+    await recordAudit({
+      actorUserId: actor.id,
+      organizationId: org.id,
+      action: 'access_key.rotated',
+      targetType: 'organization',
+      targetId: org.id,
+    });
+    return { accessKey: key };
+  },
+
+  /** List the administrator login credentials (Admin IDs) for the organization. */
+  async listAdminCredentials(actor: AuthUser): Promise<AdminCredentialItem[]> {
+    const org = await requireOrgPermission(actor, 'org:manage');
+    const res = await pool.query<{
+      id: string;
+      admin_id: string;
+      user_id: string;
+      name: string;
+      email: string;
+      status: string;
+      created_at: string;
+    }>(
+      `SELECT c.id, c.admin_id, c.user_id, u.name, u.email, c.status, c.created_at
+       FROM administrator_login_credentials c
+       JOIN users u ON u.id = c.user_id
+       WHERE c.organization_id = $1
+       ORDER BY c.created_at`,
+      [org.id],
+    );
+    return res.rows.map((row) => ({
+      id: row.id,
+      adminId: row.admin_id,
+      userId: row.user_id,
+      name: row.name,
+      email: row.email,
+      status: row.status === 'disabled' ? 'disabled' : 'active',
+      createdAt: row.created_at,
+    }));
+  },
+
+  /**
+   * Issue an Admin ID for an existing active organization administrator. Used
+   * when an admin was promoted before the credential system existed. A user can
+   * only ever hold one credential per organization (enforced by the DB).
+   */
+  async enrollAdminCredential(actor: AuthUser, membershipId: string): Promise<AdminCredentialItem> {
+    const org = await requireOrgPermission(actor, 'org:manage');
+    const res = await pool.query<{
+      user_id: string;
+      status: string;
+      role_code: string;
+      name: string;
+      email: string;
+    }>(
+      `SELECT m.user_id, m.status, r.code AS role_code, u.name, u.email
+       FROM organization_memberships m
+       JOIN roles r ON r.id = m.role_id
+       JOIN users u ON u.id = m.user_id
+       WHERE m.id = $1 AND m.organization_id = $2`,
+      [membershipId, org.id],
+    );
+    const member = res.rows[0];
+    if (!member) {
+      throw new AppError(404, 'This member could not be found.', 'NOT_FOUND');
+    }
+    if (member.status !== 'active' || member.role_code !== 'organization_administrator') {
+      throw new AppError(
+        400,
+        'Only active organization administrators can receive an Admin ID.',
+        'INVALID_REFERENCE',
+      );
+    }
+    const credential = await adminService.ensureAdminCredential(member.user_id, org.id);
+    await recordAudit({
+      actorUserId: actor.id,
+      organizationId: org.id,
+      action: 'admin_credential.enrolled',
+      targetType: 'administrator_login_credential',
+      targetId: credential.id,
+      metadata: { userId: member.user_id },
+    });
+    return {
+      id: credential.id,
+      adminId: credential.adminId,
+      userId: member.user_id,
+      name: member.name,
+      email: member.email,
+      status: credential.status,
+      createdAt: credential.createdAt,
+    };
+  },
   async getJoinSettings(orgId: string): Promise<OrgJoinSettings> {
     const res = await pool.query<{ settings: string | null }>(
       `SELECT settings FROM organizations WHERE id = $1`,
@@ -457,6 +579,22 @@ export const organizationService = {
        WHERE id = $3`,
       [nextRoleId, nextStatus, membershipId],
     );
+
+    // Keep Admin ID login access in sync with the member's role/status.
+    if (nextRoleCode === 'organization_administrator' && nextStatus === 'active') {
+      await adminService.ensureAdminCredential(member.user_id, org.id);
+    } else {
+      await adminService.disableAdminCredential(member.user_id, org.id);
+    }
+    await recordAudit({
+      actorUserId: actor.id,
+      organizationId: org.id,
+      action: 'member.updated',
+      targetType: 'organization_membership',
+      targetId: membershipId,
+      metadata: { roleCode: nextRoleCode, status: nextStatus },
+    });
+
     const res = await pool.query<MemberRow>(`${MEMBER_SELECT} WHERE m.id = $1`, [membershipId]);
     return toMember(res.rows[0]);
   },
@@ -489,6 +627,17 @@ export const organizationService = {
       );
     }
     await pool.query('DELETE FROM organization_memberships WHERE id = $1', [membershipId]);
+    if (member.role_code === 'organization_administrator') {
+      await adminService.disableAdminCredential(member.user_id, org.id);
+    }
+    await recordAudit({
+      actorUserId: actor.id,
+      organizationId: org.id,
+      action: 'member.removed',
+      targetType: 'organization_membership',
+      targetId: membershipId,
+      metadata: { userId: member.user_id },
+    });
   },
 
   async listInvitations(actor: AuthUser): Promise<InvitationItem[]> {

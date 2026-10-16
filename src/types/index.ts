@@ -67,6 +67,16 @@ export interface OrgRole {
   system: boolean;
 }
 
+export interface AdminCredential {
+  id: string;
+  adminId: string;
+  userId: string;
+  name: string;
+  email: string;
+  status: 'active' | 'disabled';
+  createdAt: string;
+}
+
 export interface OrganizationMember {
   id: string;
   userId: string;

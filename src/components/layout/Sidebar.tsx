@@ -40,13 +40,13 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-slate-200 bg-white transition-[width] duration-200 lg:flex',
+        'fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-hairline bg-white/95 backdrop-blur-xl transition-[width] duration-200 lg:flex',
         collapsed ? 'w-16' : 'w-64',
       )}
     >
       <div
         className={cn(
-          'flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 px-4',
+          'flex h-16 shrink-0 items-center gap-3 border-b border-hairline px-4',
           collapsed && 'justify-center px-2',
         )}
       >
@@ -92,8 +92,8 @@ export function Sidebar() {
                               'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40',
                               collapsed && 'justify-center px-0',
                               isActive
-                                ? 'text-brand-700 font-semibold'
-                                : 'text-slate-600',
+                                ? 'bg-forest-50 text-forest-900 font-semibold ring-1 ring-inset ring-hairline'
+                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
                             )
                           }
                         >
@@ -115,7 +115,7 @@ export function Sidebar() {
 
       <div
         className={cn(
-          'shrink-0 border-t border-slate-200 p-3',
+          'shrink-0 border-t border-hairline p-3',
           collapsed ? 'flex flex-col items-center gap-2' : 'flex items-center justify-between gap-2',
         )}
       >

@@ -24,6 +24,7 @@ import { Team } from '@/pages/Team';
 import { Weather } from '@/pages/Weather';
 import { Workers } from '@/pages/Workers';
 import { AcceptInvitation } from '@/pages/auth/AcceptInvitation';
+import { AdminLogin } from '@/pages/auth/AdminLogin';
 import { EntryChoice } from '@/pages/auth/EntryChoice';
 import { ForgotPassword } from '@/pages/auth/ForgotPassword';
 import { AuthSplash } from '@/pages/auth/AuthSplash';
@@ -31,6 +32,8 @@ import { Login } from '@/pages/auth/Login';
 import { NewOrganization } from '@/pages/auth/NewOrganization';
 import { Register } from '@/pages/auth/Register';
 import { ResetPassword } from '@/pages/auth/ResetPassword';
+import { Splash } from '@/pages/auth/Splash';
+import { Welcome } from '@/pages/auth/Welcome';
 
 registerServiceWorker();
 
@@ -44,6 +47,30 @@ export default function App() {
       <Routes>
         <Route
           path="/login"
+          element={
+            <GuestGuard>
+              <Splash />
+            </GuestGuard>
+          }
+        />
+        <Route
+          path="/login/welcome"
+          element={
+            <GuestGuard>
+              <Welcome />
+            </GuestGuard>
+          }
+        />
+        <Route
+          path="/login/admin"
+          element={
+            <GuestGuard>
+              <AdminLogin />
+            </GuestGuard>
+          }
+        />
+        <Route
+          path="/login/user"
           element={
             <GuestGuard>
               <AuthSplash />

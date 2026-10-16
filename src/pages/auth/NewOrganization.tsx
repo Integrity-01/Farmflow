@@ -22,11 +22,13 @@ export function NewOrganization() {
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [accessKey, setAccessKey] = useState<string | null>(null);
+  const [adminId, setAdminId] = useState<string | null>(null);
   const [createdSession, setCreatedSession] = useState<AuthSession | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedAdmin, setCopiedAdmin] = useState(false);
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
@@ -54,6 +56,7 @@ export function NewOrganization() {
         password,
       });
       setAccessKey(result.accessKey);
+      setAdminId(result.adminId);
       setCreatedSession({ user: result.user, accessToken: result.accessToken });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Please try again.');
@@ -72,6 +75,16 @@ export function NewOrganization() {
     }
   }
 
+  async function copyAdminId() {
+    if (!adminId) return;
+    try {
+      await navigator.clipboard.writeText(adminId);
+      setCopiedAdmin(true);
+    } catch {
+      setError('Copy was blocked by your browser. Select and copy the Admin ID manually.');
+    }
+  }
+
   function continueToFarmFlow() {
     if (!createdSession) {
       setError('Your administrator session is unavailable. Please sign in using the organization key.');
@@ -83,15 +96,48 @@ export function NewOrganization() {
 
   if (accessKey) {
     return (
-      <AuthLayout title="Your organization is ready" subtitle="Save this key somewhere safe. It is shown only once.">
+      <AuthLayout
+        title="Your organization is ready"
+        subtitle="Save these details somewhere safe. They are shown only once."
+      >
         <div className="space-y-4">
           <Alert variant="success">
             <AlertTitle>{organizationName.trim()}</AlertTitle>
             <AlertDescription>
-              You are signed in as the organization administrator. Share this key only with people
-              who should be able to join your organization.
+              You are signed in as the organization administrator. Keep your Admin ID and password
+              private, and share the organization key only with people who should join your team.
             </AlertDescription>
           </Alert>
+          {adminId ? (
+            <>
+              <FormField
+                id="new-admin-id"
+                label="Your Admin ID"
+                hint="Sign in with this instead of your email"
+              >
+                <Input
+                  id="new-admin-id"
+                  value={adminId}
+                  readOnly
+                  className="font-mono tracking-wide"
+                  onFocus={(event) => event.currentTarget.select()}
+                />
+              </FormField>
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full"
+                onClick={() => void copyAdminId()}
+              >
+                {copiedAdmin ? (
+                  <Check className="mr-2 size-4" aria-hidden />
+                ) : (
+                  <Copy className="mr-2 size-4" aria-hidden />
+                )}
+                {copiedAdmin ? 'Copied' : 'Copy Admin ID'}
+              </Button>
+            </>
+          ) : null}
           <FormField id="new-access-key" label="Organization key">
             <Input id="new-access-key" value={accessKey} readOnly onFocus={(event) => event.currentTarget.select()} />
           </FormField>
@@ -119,7 +165,7 @@ export function NewOrganization() {
       footer={
         <>
           Already have an organization key?{' '}
-          <Link to="/login" className="font-semibold text-brand-700 hover:underline">
+          <Link to="/login/user" className="font-semibold text-brand-700 hover:underline">
             Enter it here
           </Link>
         </>

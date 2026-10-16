@@ -14,9 +14,11 @@ import {
   acceptInvitation,
   approveMember,
   createInvitation,
+  enrollAdminCredential,
   generateAccessKey,
   getOrgSettings,
   joinWithAccessKey,
+  listAdminCredentials,
   listInvitations,
   listMemberRequests,
   listMembers,
@@ -25,6 +27,7 @@ import {
   rejectMember,
   removeMember,
   revokeInvitation,
+  rotateAccessKey,
   switchOrg,
   updateMember,
   updateOrgSettings,
@@ -36,6 +39,9 @@ orgRouter.use(requireAuth());
 orgRouter.get('/mine', listMyOrgs);
 orgRouter.post('/switch', validate(switchOrgSchema), switchOrg);
 orgRouter.post('/access-keys', generateAccessKey);
+orgRouter.post('/access-keys/rotate', rotateAccessKey);
+orgRouter.get('/admin-credentials', listAdminCredentials);
+orgRouter.post('/admin-credentials/members/:id', enrollAdminCredential);
 orgRouter.post('/join', validate(joinOrgSchema), joinWithAccessKey);
 orgRouter.get('/roles', listRoles);
 orgRouter.get('/settings', getOrgSettings);

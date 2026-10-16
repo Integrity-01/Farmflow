@@ -60,7 +60,7 @@ export function ResetPassword() {
             </AlertDescription>
           </Alert>
           <Button asChild className="w-full">
-            <Link to="/login">Sign in with your new password</Link>
+            <Link to="/login/welcome">Sign in with your new password</Link>
           </Button>
         </div>
       ) : (

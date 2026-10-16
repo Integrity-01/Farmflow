@@ -10,7 +10,10 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "migrate": "tsx src/database/migrate.ts"
+    "migrate": "tsx src/database/migrate.ts",
+    "backfill:admin-ids": "tsx src/database/backfill-admin-ids.ts",
+    "test": "tsx --test \"tests/**/*.test.ts\"",
+    "test:live": "node auth-admin-live.cjs"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

@@ -26,7 +26,7 @@ export function Register() {
   const [submitting, setSubmitting] = useState(false);
 
   if (!orgState || !orgState.organization?.id || !orgState.accessKey) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login/user" replace />;
   }
   const verifiedOrg = orgState;
 
@@ -79,7 +79,7 @@ export function Register() {
             Sign in
           </Link>
           <span className="mx-2 text-slate-300">·</span>
-          <Link to="/login" className="font-semibold text-slate-600 hover:underline">
+          <Link to="/login/user" className="font-semibold text-slate-600 hover:underline">
             Change key
           </Link>
         </>

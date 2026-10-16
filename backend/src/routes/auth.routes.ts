@@ -10,6 +10,7 @@ import {
   resetPassword,
   verifyOrganizationKey,
   createOrganization,
+  adminLogin,
 } from '../controllers/auth.controller.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -20,6 +21,7 @@ import {
   resetPasswordSchema,
   verifyOrganizationKeySchema,
   createOrganizationSchema,
+  adminLoginSchema,
 } from '../validations/auth.schema.js';
 
 const authRouter = Router();
@@ -62,6 +64,7 @@ const forgotLimiter = rateLimit({
 
 authRouter.post('/register', registerLimiter, validate(registerSchema), register);
 authRouter.post('/login', loginLimiter, validate(loginSchema), login);
+authRouter.post('/admin-login', loginLimiter, validate(adminLoginSchema), adminLogin);
 authRouter.post('/verify-organization-key', loginLimiter, validate(verifyOrganizationKeySchema), verifyOrganizationKey);
 authRouter.post('/organizations', registerLimiter, validate(createOrganizationSchema), createOrganization);
 authRouter.post('/refresh', refresh);

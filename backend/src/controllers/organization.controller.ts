@@ -44,6 +44,48 @@ export async function generateAccessKey(
   }
 }
 
+export async function rotateAccessKey(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const result = await organizationService.rotateAccessKey(req.auth!.user);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function listAdminCredentials(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const credentials = await organizationService.listAdminCredentials(req.auth!.user);
+    res.json({ credentials });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function enrollAdminCredential(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const credential = await organizationService.enrollAdminCredential(
+      req.auth!.user,
+      param(req, 'id'),
+    );
+    res.status(201).json({ credential });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function listRoles(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const roles = await organizationService.listRoles(req.auth!.user);

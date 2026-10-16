@@ -1,5 +1,6 @@
 import { api } from '@/services/api';
 import type {
+  AdminCredential,
   AuthUser,
   OrgInvitation,
   OrgRole,
@@ -41,6 +42,25 @@ export const organizationApi = {
   async generateAccessKey(): Promise<string> {
     const result = await api.post<{ accessKey: string }>('/organizations/access-keys');
     return result.accessKey;
+  },
+
+  async rotateAccessKey(): Promise<string> {
+    const result = await api.post<{ accessKey: string }>('/organizations/access-keys/rotate');
+    return result.accessKey;
+  },
+
+  async listAdminCredentials(): Promise<AdminCredential[]> {
+    const result = await api.get<{ credentials: AdminCredential[] }>(
+      '/organizations/admin-credentials',
+    );
+    return result.credentials;
+  },
+
+  async enrollAdminCredential(membershipId: string): Promise<AdminCredential> {
+    const result = await api.post<{ credential: AdminCredential }>(
+      `/organizations/admin-credentials/members/${membershipId}`,
+    );
+    return result.credential;
   },
 
   async join(accessKey: string): Promise<OrgSummary[]> {

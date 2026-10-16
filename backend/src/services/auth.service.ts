@@ -13,6 +13,9 @@ import { sendEmail } from './email.service.js';
 import { emailTemplates } from './email/templates.js';
 import { pool, uid } from '../database/pool.js';
 import { organizationService } from './organization.service.js';
+import { adminService } from './admin.service.js';
+import { recordAudit } from './audit.service.js';
+import { normalizeAdminId } from '../utils/admin-id.js';
 import type { AuthUser, UserRole } from '../types/auth.js';
 
 export interface AuthResult {
@@ -303,7 +306,13 @@ export const authService = {
       phone?: string;
     },
     req: { ip?: string; userAgent?: string },
-  ): Promise<AuthResult & { accessKey: string; organization: { id: string; name: string } }> {
+  ): Promise<
+    AuthResult & {
+      accessKey: string;
+      adminId: string;
+      organization: { id: string; name: string };
+    }
+  > {
     const email = input.email.trim().toLowerCase();
     if (await findUserByEmail(email)) {
       throw new AppError(409, 'An account with this email already exists.', 'EMAIL_TAKEN');
@@ -351,6 +360,20 @@ export const authService = {
       await db.query(`INSERT IGNORE INTO notification_preferences (user_id) VALUES ($1)`, [userId]);
     });
 
+    // The first administrator receives a dedicated, backend-generated Admin ID
+    // that maps this login identifier to their identity + organization. The
+    // credential is created outside the transaction so a unique-id retry cannot
+    // abort the org creation itself.
+    const credential = await adminService.ensureAdminCredential(userId, organizationId);
+    await recordAudit({
+      actorUserId: userId,
+      organizationId,
+      action: 'organization.created',
+      targetType: 'organization',
+      targetId: organizationId,
+      metadata: { organizationName },
+    });
+
     const user = toAuthUser({
       id: userId,
       name,
@@ -376,6 +399,7 @@ export const authService = {
       accessToken,
       refreshToken,
       accessKey,
+      adminId: credential.adminId,
       organization: { id: organizationId, name: organizationName },
     };
   },
@@ -425,6 +449,77 @@ export const authService = {
     );
     const authUser = await withOrgs(toAuthUser(user), sessionId);
     const accessToken = signAccessToken({ sub: user.id, role: user.role, sid: sessionId });
+
+    return { user: authUser, accessToken, refreshToken };
+  },
+
+  /**
+   * Administrator login via the dedicated Admin ID. Resolves the Admin ID to an
+   * internal user identity, verifies the password, then confirms the identity
+   * still has an active Organization Administrator membership in an active
+   * organization. Administrator privileges are never granted merely because the
+   * request came from the admin login endpoint.
+   */
+  async adminLogin(
+    adminIdInput: string,
+    password: string,
+    req: { ip?: string; userAgent?: string },
+  ): Promise<AuthResult> {
+    const adminId = normalizeAdminId(adminIdInput);
+    const record = await adminService.findLoginRecord(adminId);
+
+    // Generic error so the response never discloses whether an Admin ID exists.
+    const invalid = () =>
+      new AppError(401, 'Incorrect Admin ID or password.', 'INVALID_CREDENTIALS');
+
+    if (!record) throw invalid();
+    const valid = record.passwordHash ? await bcrypt.compare(password, record.passwordHash) : false;
+    if (!valid) throw invalid();
+
+    if (record.credentialStatus !== 'active' || !record.isActive) {
+      throw new AppError(403, 'This administrator account is not active.', 'ACCOUNT_DISABLED');
+    }
+    if (record.organizationStatus !== 'active') {
+      throw new AppError(403, 'This organization is not active.', 'ORGANIZATION_INACTIVE');
+    }
+    if (
+      record.membershipStatus !== 'active' ||
+      record.membershipRole !== 'organization_administrator'
+    ) {
+      throw new AppError(
+        403,
+        'This account no longer has administrator access to this organization.',
+        'ADMIN_ACCESS_REQUIRED',
+      );
+    }
+
+    await pool.query(`UPDATE users SET last_login_at = now() WHERE id = $1`, [record.userId]);
+
+    const { refreshToken, sessionId } = await authSession.createSession(record.userId, req);
+    await pool.query(
+      `UPDATE sessions SET active_organization_id = $1 WHERE id = $2`,
+      [record.organizationId, sessionId],
+    );
+    const user = toAuthUser({
+      id: record.userId,
+      name: record.name,
+      email: record.email,
+      phone: record.phone,
+      role: record.role,
+      avatar_url: record.avatarUrl,
+      password_hash: record.passwordHash,
+      is_active: record.isActive,
+    });
+    const authUser = await withOrgs(user, sessionId);
+    const accessToken = signAccessToken({ sub: record.userId, role: record.role, sid: sessionId });
+
+    await recordAudit({
+      actorUserId: record.userId,
+      organizationId: record.organizationId,
+      action: 'admin.login',
+      targetType: 'administrator_login_credential',
+      targetId: record.credentialId,
+    });
 
     return { user: authUser, accessToken, refreshToken };
   },
@@ -498,6 +593,13 @@ export const authService = {
         `UPDATE sessions SET revoked_at = now() WHERE user_id = $1 AND revoked_at IS NULL`,
         [tokenRow.rows[0].user_id],
       );
+    });
+
+    await recordAudit({
+      actorUserId: tokenRow.rows[0].user_id,
+      action: 'password.reset',
+      targetType: 'user',
+      targetId: tokenRow.rows[0].user_id,
     });
   },
 };

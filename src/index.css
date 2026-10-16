@@ -17,6 +17,26 @@
   --color-brand-900: #14532d;
   --color-brand-950: #052e16;
 
+  /* FarmFlow agriculture palette (drawing direction reference) */
+  --color-forest-50: #eef5f0;
+  --color-forest-100: #d7e8dd;
+  --color-forest-600: #226b41;
+  --color-forest-700: #1c5638;
+  --color-forest-800: #16432c;
+  --color-forest-900: #123d2a;
+  --color-forest-950: #0b2a1c;
+
+  --color-accent-200: #e2fbc4;
+  --color-accent-300: #c8f79a;
+  --color-accent-400: #a8f05a; /* primary lime */
+  --color-accent-500: #8fdc3f; /* lime hover */
+  --color-accent-600: #6fb52a;
+
+  --color-ink: #193326; /* primary text */
+  --color-muted: #66766b; /* secondary text */
+  --color-hairline: #dfe9de; /* borders */
+  --color-pale: #f2f8ec; /* pale green background */
+
   --radius-xs: 0.375rem;
   --radius-sm: 0.5rem;
   --radius-md: 0.625rem;
@@ -27,6 +47,9 @@
   --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
   --shadow-popover: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 12px 24px -4px rgb(15 23 42 / 0.1);
   --shadow-modal: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 25px 50px -12px rgb(15 23 42 / 0.25);
+  --shadow-soft: 0 1px 2px rgb(25 70 38 / 0.05), 0 8px 24px -8px rgb(25 70 38 / 0.12);
+  --shadow-glass: 0 12px 32px rgb(25 70 38 / 0.08);
+  --shadow-lift: 0 16px 40px -12px rgb(25 70 38 / 0.22);
 
   --animate-fade-in: fade-in 150ms ease-out;
   --animate-fade-out: fade-out 120ms ease-in forwards;
@@ -37,7 +60,18 @@
   --animate-slide-in-from-right: slide-in-from-right 180ms cubic-bezier(0.16, 1, 0.3, 1);
   --animate-slide-out-to-right: slide-out-to-right 160ms ease-in forwards;
   --animate-slide-in-from-bottom: slide-in-from-bottom 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-fade-in-slow: fade-in 700ms ease-out both;
+  --animate-rise-in: rise-in 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-drift: drift 6s ease-in-out infinite;
 
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes drift {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
   @keyframes fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -82,7 +116,8 @@
   }
 
   body {
-    @apply bg-slate-50 font-sans text-slate-900 antialiased;
+    background-color: var(--color-pale);
+    @apply font-sans text-slate-900 antialiased;
   }
 
   :focus-visible {
@@ -90,7 +125,18 @@
   }
 
   ::selection {
-    @apply bg-brand-200 text-brand-950;
+    @apply bg-accent-300 text-forest-900;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
@@ -106,5 +152,49 @@
 
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .glass-surface {
+    background-color: rgb(255 255 255 / 0.76);
+    border: 1px solid rgb(255 255 255 / 0.48);
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  .glass-panel {
+    background-color: rgb(255 255 255 / 0.9);
+    border: 1px solid rgb(255 255 255 / 0.6);
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+  }
+
+  .glass-dark {
+    background-color: rgb(9 32 22 / 0.42);
+    border: 1px solid rgb(255 255 255 / 0.2);
+    box-shadow: var(--shadow-glass);
+    backdrop-filter: blur(16px) saturate(130%);
+    -webkit-backdrop-filter: blur(16px) saturate(130%);
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass-surface {
+      background-color: rgb(255 255 255 / 0.96);
+    }
+    .glass-panel {
+      background-color: rgb(255 255 255 / 0.98);
+    }
+    .glass-dark {
+      background-color: rgb(9 32 22 / 0.82);
+    }
   }
 }

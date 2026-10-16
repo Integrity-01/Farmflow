@@ -21,6 +21,7 @@ httpOnly cookie (7-day lifetime).
 - **Codes** are stable and machine-readable: `VALIDATION_ERROR`, `NOT_FOUND`,
   `UNAUTHORIZED`, `FORBIDDEN`, `RATE_LIMITED`, `EMAIL_TAKEN`,
   `INVALID_CREDENTIALS`, `ACCOUNT_DISABLED`, `INVALID_RESET_TOKEN`,
+  `ADMIN_ACCESS_REQUIRED`, `ORGANIZATION_INACTIVE`, `LAST_ADMIN`,
   `INTERNAL_ERROR`, `NETWORK_ERROR`/`REQUEST_TIMEOUT` (client).
 
 ## Endpoints (current)
@@ -32,7 +33,8 @@ httpOnly cookie (7-day lifetime).
 | POST | `/api/auth/verify-organization-key` | — | Verify an organization key before authentication |
 | POST | `/api/auth/register` | — | Create an account in the verified organization |
 | POST | `/api/auth/login` | — | Sign in to the verified organization |
-| POST | `/api/auth/organizations` | — | Create an organization, administrator account, and initial key |
+| POST | `/api/auth/admin-login` | — | Sign in as an administrator with an Admin ID + password |
+| POST | `/api/auth/organizations` | — | Create an organization, administrator account, initial Admin ID and key |
 | POST | `/api/auth/refresh` | — | Rotate session using `ff_refresh` cookie |
 | POST | `/api/auth/logout` | — | Revoke session, clear cookie |
 | GET | `/api/auth/me` | Bearer | Current user profile |
@@ -40,6 +42,9 @@ httpOnly cookie (7-day lifetime).
 | POST | `/api/auth/reset-password` | — | Set new password from reset token |
 | GET | `/api/organizations/settings` | Bearer | New-member join settings (admin) |
 | PATCH | `/api/organizations/settings` | Bearer | Update `selfJoin` / `defaultRole` (admin) |
+| POST | `/api/organizations/access-keys/rotate` | Bearer | Revoke the active key and issue a fresh one (admin) |
+| GET | `/api/organizations/admin-credentials` | Bearer | List the organization's Admin IDs (admin) |
+| POST | `/api/organizations/admin-credentials/members/:id` | Bearer | Issue an Admin ID for an active administrator (admin) |
 | GET | `/api/farms` | Bearer | List farms (role-aware, filtered/paginated) |
 | GET | `/api/farms/managers` | Bearer | Active farm managers & admins |
 | POST | `/api/farms` | Bearer+ | Create a farm |
@@ -113,8 +118,9 @@ organization's default role) or `approval` (registrations are created
 account creation or sign-in and is checked against that organization by the
 API — the key never replaces user credentials or grants privileged access on
 its own. `POST /api/auth/organizations` creates the organization and its
-administrator and returns an initial `accessKey` once for the
-administrator to save/share.
+administrator and returns an initial `accessKey` **and an `adminId`** once for
+the administrator to save. The `adminId` is the administrator's dedicated login
+identifier (see below); the `accessKey` is the shared join key.
 
 The `Set-Cookie: ff_refresh=…` header carries the refresh session.
 
@@ -136,6 +142,48 @@ The `Set-Cookie: ff_refresh=…` header carries the refresh session.
 - Forgot-password: always responds `200` (no account enumeration). When a
   provider is configured an email is sent (30 min expiry); in development the
   reset link is returned as `devResetLink`.
+
+### Administrator Admin ID
+
+Administrators sign in with a dedicated, backend-generated **Admin ID** instead
+of an email address. Admin IDs use the format `FF-ADM-XXXX-XXXX` (unambiguous
+A–Z/2–9 alphabet — no `I`, `O`, `0`, `1`) and are globally unique, generated
+server-side, and never derived from a name, email, or the organization access
+key. They are login identifiers, not secrets, and are not passwords or tokens.
+
+```http
+POST /api/auth/admin-login
+Content-Type: application/json
+
+{ "adminId": "FF-ADM-8K29-XP6R", "password": "…" }
+```
+
+```json
+200 { "user": { "id": "…", "role": "organization_administrator", "…": "…" },
+      "accessToken": "…" }
+```
+
+- Lookups normalize the Admin ID (case-insensitive, surrounding whitespace and
+  optional dashes ignored), so `ff adm 8k29 xp6r` also works.
+- Unknown Admin ID and wrong password both return `401 INVALID_CREDENTIALS`
+  (no account enumeration).
+- `403 ACCOUNT_DISABLED` when the credential or account is disabled;
+  `403 ORGANIZATION_INACTIVE` when the organization is suspended;
+  `403 ADMIN_ACCESS_REQUIRED` when the identity no longer holds an active
+  `organization_administrator` membership. Administrator access is always
+  re-checked per request from the membership — it is never inferred from the
+  login endpoint used.
+- Rate limited to 8 attempts/15 min/IP (shared with `/auth/login`).
+- Admin credentials are provisioned automatically for the first administrator
+  and whenever a member is promoted to `organization_administrator` (and
+  disabled when they are demoted or removed). Issue Admin IDs for existing
+  administrators with `POST /api/organizations/admin-credentials/members/:id`.
+- Existing installations can backfill Admin IDs with
+  `npm run backfill:admin-ids -w backend`.
+
+**Not yet implemented:** multi-factor authentication for administrators. Passwords
+are hashed with bcrypt; account recovery works through the existing
+`forgot-password` / `reset-password` flow (which also revokes all sessions).
 
 ### Roles
 

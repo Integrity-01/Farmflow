@@ -70,13 +70,16 @@ export const authApi = {
     return api.post<AuthSession>('/auth/register', input);
   },
 
+  async adminLogin(adminId: string, password: string): Promise<AuthSession> {
+    return api.post<AuthSession>('/auth/admin-login', { adminId, password });
+  },
+
   async createOrganization(input: CreateOrganizationInput): Promise<
-    AuthSession & { accessKey: string; organization: OrganizationAccess }
+    AuthSession & { accessKey: string; adminId: string; organization: OrganizationAccess }
   > {
-    return api.post<AuthSession & { accessKey: string; organization: OrganizationAccess }>(
-      '/auth/organizations',
-      input,
-    );
+    return api.post<
+      AuthSession & { accessKey: string; adminId: string; organization: OrganizationAccess }
+    >('/auth/organizations', input);
   },
 
   async refresh(): Promise<AuthSession> {

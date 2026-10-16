@@ -36,7 +36,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { useToastStore } from '@/store/toast.store';
 import type { MembershipStatus, OrganizationMember } from '@/types';
 
-type Tab = 'members' | 'requests' | 'invitations' | 'access' | 'settings';
+type Tab = 'members' | 'requests' | 'invitations' | 'access' | 'admins' | 'settings';
 
 const STATUS_LABEL: Record<MembershipStatus, string> = {
   active: 'Active',
@@ -90,6 +90,7 @@ export function Team() {
           {isAdmin ? <TabsTrigger value="requests">Requests</TabsTrigger> : null}
           {canInvite ? <TabsTrigger value="invitations">Invitations</TabsTrigger> : null}
           {isAdmin ? <TabsTrigger value="access">Access key</TabsTrigger> : null}
+          {isAdmin ? <TabsTrigger value="admins">Admin IDs</TabsTrigger> : null}
           {isAdmin ? <TabsTrigger value="settings">Settings</TabsTrigger> : null}
         </TabsList>
 
@@ -109,6 +110,11 @@ export function Team() {
         {isAdmin ? (
           <TabsContent value="access">
             <AccessKeyTab />
+          </TabsContent>
+        ) : null}
+        {isAdmin ? (
+          <TabsContent value="admins">
+            <AdminCredentialsTab />
           </TabsContent>
         ) : null}
         {isAdmin ? (
@@ -702,6 +708,16 @@ function AccessKeyTab() {
       notify('Could not generate key', errorMessage(error, 'Please try again.'), 'danger'),
   });
 
+  const rotateMutation = useMutation({
+    mutationFn: () => organizationApi.rotateAccessKey(),
+    onSuccess: (key) => {
+      setAccessKey(key);
+      notify('Access key rotated', 'The previous key has been revoked.');
+    },
+    onError: (error) =>
+      notify('Could not rotate key', errorMessage(error, 'Please try again.'), 'danger'),
+  });
+
   async function copyKey() {
     if (!accessKey) return;
     try {
@@ -734,14 +750,143 @@ function AccessKeyTab() {
           </div>
         ) : null}
 
-        <Button
-          variant={accessKey ? 'outline' : 'primary'}
-          loading={generateMutation.isPending}
-          onClick={() => generateMutation.mutate()}
-        >
-          <KeyRound className="size-4" aria-hidden />
-          {accessKey ? 'Generate another key' : 'Generate access key'}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={accessKey ? 'outline' : 'primary'}
+            loading={generateMutation.isPending}
+            onClick={() => generateMutation.mutate()}
+          >
+            <KeyRound className="size-4" aria-hidden />
+            {accessKey ? 'Generate another key' : 'Generate access key'}
+          </Button>
+          <Button
+            variant="outline"
+            loading={rotateMutation.isPending}
+            onClick={() => rotateMutation.mutate()}
+          >
+            <KeyRound className="size-4" aria-hidden />
+            Rotate key
+          </Button>
+        </div>
+        <p className="text-xs text-slate-500">
+          Rotating revokes the current key and issues a fresh one. Everyone who has the old key
+          will need the new one to join.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AdminCredentialsTab() {
+  const queryClient = useQueryClient();
+
+  const credentialsQuery = useQuery({
+    queryKey: ['admin-credentials'],
+    queryFn: organizationApi.listAdminCredentials,
+  });
+  const membersQuery = useQuery({
+    queryKey: ['org-members'],
+    queryFn: organizationApi.listMembers,
+  });
+
+  const enrollMutation = useMutation({
+    mutationFn: (membershipId: string) => organizationApi.enrollAdminCredential(membershipId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin-credentials'] });
+      notify('Admin ID issued', 'The administrator can now sign in with their Admin ID.');
+    },
+    onError: (error) =>
+      notify('Could not issue Admin ID', errorMessage(error, 'Please try again.'), 'danger'),
+  });
+
+  if (credentialsQuery.isLoading) {
+    return <Skeleton className="mt-3 h-40 w-full" />;
+  }
+
+  if (credentialsQuery.isError) {
+    return (
+      <Alert variant="danger" className="mt-3">
+        <AlertTitle>Could not load Admin IDs</AlertTitle>
+        <AlertDescription>
+          <p>{errorMessage(credentialsQuery.error, 'Please try again.')}</p>
+          <Button variant="outline" size="sm" className="mt-2" onClick={() => void credentialsQuery.refetch()}>
+            Try again
+          </Button>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  const credentials = credentialsQuery.data ?? [];
+  const admins = (membersQuery.data ?? []).filter(
+    (member) => member.role === 'organization_administrator' && member.status === 'active',
+  );
+  const withCredential = new Set(credentials.map((credential) => credential.userId));
+  const missing = admins.filter((member) => !withCredential.has(member.userId));
+
+  return (
+    <Card className="mt-3">
+      <CardHeader>
+        <CardTitle>Administrator Admin IDs</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-slate-500">
+          Administrators sign in with an Admin ID and password instead of an email address. FarmFlow
+          generates Admin IDs — they cannot be chosen or changed.
+        </p>
+
+        {credentials.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-slate-200 p-4 text-center text-sm text-slate-500">
+            No Admin IDs have been issued for this organization yet.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {credentials.map((credential) => (
+              <div
+                key={credential.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 p-3"
+              >
+                <div className="min-w-0">
+                  <p className="font-mono text-sm font-semibold tracking-wide text-slate-900">
+                    {credential.adminId}
+                  </p>
+                  <p className="truncate text-xs text-slate-500">
+                    {credential.name} · {credential.email}
+                  </p>
+                </div>
+                <Badge variant={credential.status === 'active' ? 'success' : 'danger'}>
+                  {credential.status === 'active' ? 'Active' : 'Disabled'}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {missing.length > 0 ? (
+          <div className="space-y-2 border-t border-slate-100 pt-4">
+            <p className="text-sm font-semibold text-slate-700">
+              Administrators without an Admin ID
+            </p>
+            {missing.map((member) => (
+              <div
+                key={member.id}
+                className="flex items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-slate-800">{member.name}</p>
+                  <p className="truncate text-xs text-slate-500">{member.email}</p>
+                </div>
+                <Button
+                  size="sm"
+                  loading={enrollMutation.isPending && enrollMutation.variables === member.id}
+                  onClick={() => enrollMutation.mutate(member.id)}
+                >
+                  Issue Admin ID
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );

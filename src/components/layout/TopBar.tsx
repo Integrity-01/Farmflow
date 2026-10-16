@@ -57,7 +57,7 @@ export function TopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/85 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-hairline bg-white/80 backdrop-blur-xl">
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 lg:hidden">
           <div className="flex size-9 items-center justify-center rounded-xl bg-brand-600 text-white">

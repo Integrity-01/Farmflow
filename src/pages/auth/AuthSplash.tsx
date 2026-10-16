@@ -114,6 +114,11 @@ export function AuthSplash() {
               Create an organization
             </Link>
           </p>
+          <p className="mt-3 text-center text-sm">
+            <Link to="/login/welcome" className="font-medium text-slate-500 hover:text-slate-700">
+              Back to login options
+            </Link>
+          </p>
         </section>
       </main>
     </div>

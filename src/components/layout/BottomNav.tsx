@@ -5,7 +5,7 @@ import { cn } from '@/utils/cn';
 export function BottomNav() {
   return (
     <nav
-      className="safe-area-bottom fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur lg:hidden"
+      className="safe-area-bottom fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-white/90 backdrop-blur-xl lg:hidden"
       aria-label="Main"
     >
       <div className="grid h-16 grid-cols-5 items-center px-1">

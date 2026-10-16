@@ -10,7 +10,7 @@ export function EntryChoice() {
   const orgState = location.state as VerifiedOrganizationState | null;
 
   if (!orgState || !orgState.organization?.id || !orgState.accessKey) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login/user" replace />;
   }
 
   const organization = orgState.organization;
@@ -29,7 +29,7 @@ export function EntryChoice() {
           Wrong organization?{' '}
           <button
             type="button"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/login/user')}
             className="font-semibold text-brand-700 hover:underline"
           >
             Use a different key

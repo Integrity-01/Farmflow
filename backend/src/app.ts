@@ -15,7 +15,22 @@ import { requestLogger } from './middleware/request-logger.js';
 import routes from './routes/index.js';
 import { REPORTS_DIR } from './services/report.service.js';
 
-const allowedOrigins = env.CORS_ORIGIN.split(',').map((origin) => origin.trim());
+const allowedOrigins = env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean);
+const isProduction = env.NODE_ENV === 'production';
+
+// In development the web app is often served from a different local port
+// (Vite may bump 5173 -> 5174, `vite preview` uses 4173, XAMPP uses 80, or a
+// phone hits the machine's LAN IP). Those origins still proxy to this API, so
+// the browser sends them as the request Origin. Allow localhost / loopback /
+// private-LAN origins outside production; production stays allowlist-only.
+const LOCAL_ORIGIN_PATTERN = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:\d+)?$/i;
+const PRIVATE_LAN_ORIGIN_PATTERN =
+  /^https?:\/\/(10\.\d{1,3}\.\d{1,3}\.\d{1,3}|192\.168\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3})(:\d+)?$/i;
+
+function isDevelopmentOrigin(origin: string): boolean {
+  if (isProduction) return false;
+  return LOCAL_ORIGIN_PATTERN.test(origin) || PRIVATE_LAN_ORIGIN_PATTERN.test(origin);
+}
 
 // Built web app, produced by `npm run build:web` into the repo root dist/.
 // From backend/src (tsx) or backend/dist (compiled) this resolves to <repo>/dist.
@@ -39,7 +54,7 @@ export function createApp() {
   app.use(
     cors({
       origin(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || isDevelopmentOrigin(origin)) {
           callback(null, true);
           return;
         }

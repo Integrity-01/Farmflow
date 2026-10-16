@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Sunrise over rolling farmland with rows of crops and a drone flying above">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7cb6e6"/>
+      <stop offset="0.42" stop-color="#c9e6c2"/>
+      <stop offset="0.68" stop-color="#ecf2c6"/>
+      <stop offset="1" stop-color="#f7e6ac"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff7db"/>
+      <stop offset="0.45" stop-color="#ffe9a8" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a7d36a"/>
+      <stop offset="0.5" stop-color="#6fae3f"/>
+      <stop offset="1" stop-color="#2f6b2c"/>
+    </linearGradient>
+    <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f4f7d9" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#f4f7d9" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="wash" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b2a1c" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0b2a1c" stop-opacity="0.55"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3c9" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#fff3c9" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="620" fill="url(#sky)"/>
+  <circle cx="1140" cy="560" r="320" fill="url(#sun)"/>
+  <circle cx="1140" cy="560" r="86" fill="#fff3cf" opacity="0.92"/>
+
+  <path d="M0 560 C220 528 380 552 560 546 C760 538 900 558 1120 544 C1320 531 1460 552 1600 540 L1600 630 L0 630 Z" fill="#bfe0a0" opacity="0.75"/>
+  <path d="M0 588 C240 562 420 584 640 576 C860 568 980 588 1200 578 C1380 570 1500 586 1600 578 L1600 650 L0 650 Z" fill="#9ccb6e" opacity="0.85"/>
+
+  <rect y="600" width="1600" height="400" fill="url(#field)"/>
+
+  <g stroke-linecap="round">
+    <line x1="-600" y1="1010" x2="735" y2="590" stroke="#8fc85a" stroke-width="12" opacity="0.55"/>
+    <line x1="-480" y1="1010" x2="742" y2="590" stroke="#4f8f38" stroke-width="10" opacity="0.5"/>
+    <line x1="-360" y1="1010" x2="749" y2="590" stroke="#8fc85a" stroke-width="11" opacity="0.55"/>
+    <line x1="-240" y1="1010" x2="756" y2="590" stroke="#4f8f38" stroke-width="9" opacity="0.5"/>
+    <line x1="-120" y1="1010" x2="764" y2="590" stroke="#8fc85a" stroke-width="10" opacity="0.55"/>
+    <line x1="0" y1="1010" x2="771" y2="590" stroke="#4f8f38" stroke-width="8" opacity="0.5"/>
+    <line x1="120" y1="1010" x2="778" y2="590" stroke="#8fc85a" stroke-width="10" opacity="0.55"/>
+    <line x1="240" y1="1010" x2="785" y2="590" stroke="#4f8f38" stroke-width="8" opacity="0.5"/>
+    <line x1="360" y1="1010" x2="792" y2="590" stroke="#8fc85a" stroke-width="10" opacity="0.55"/>
+    <line x1="480" y1="1010" x2="800" y2="590" stroke="#4f8f38" stroke-width="8" opacity="0.5"/>
+    <line x1="600" y1="1010" x2="807" y2="590" stroke="#8fc85a" stroke-width="11" opacity="0.55"/>
+    <line x1="720" y1="1010" x2="814" y2="590" stroke="#4f8f38" stroke-width="9" opacity="0.5"/>
+    <line x1="840" y1="1010" x2="821" y2="590" stroke="#8fc85a" stroke-width="12" opacity="0.55"/>
+    <line x1="960" y1="1010" x2="828" y2="590" stroke="#4f8f38" stroke-width="9" opacity="0.5"/>
+    <line x1="1080" y1="1010" x2="836" y2="590" stroke="#8fc85a" stroke-width="11" opacity="0.55"/>
+    <line x1="1200" y1="1010" x2="843" y2="590" stroke="#4f8f38" stroke-width="8" opacity="0.5"/>
+    <line x1="1320" y1="1010" x2="850" y2="590" stroke="#8fc85a" stroke-width="10" opacity="0.55"/>
+    <line x1="1440" y1="1010" x2="857" y2="590" stroke="#4f8f38" stroke-width="8" opacity="0.5"/>
+    <line x1="1560" y1="1010" x2="864" y2="590" stroke="#8fc85a" stroke-width="10" opacity="0.55"/>
+    <line x1="1680" y1="1010" x2="872" y2="590" stroke="#4f8f38" stroke-width="8" opacity="0.5"/>
+    <line x1="1800" y1="1010" x2="879" y2="590" stroke="#8fc85a" stroke-width="10" opacity="0.55"/>
+    <line x1="1920" y1="1010" x2="886" y2="590" stroke="#4f8f38" stroke-width="8" opacity="0.5"/>
+    <line x1="2040" y1="1010" x2="893" y2="590" stroke="#8fc85a" stroke-width="11" opacity="0.55"/>
+    <line x1="2160" y1="1010" x2="900" y2="590" stroke="#4f8f38" stroke-width="9" opacity="0.5"/>
+    <line x1="2280" y1="1010" x2="908" y2="590" stroke="#8fc85a" stroke-width="12" opacity="0.55"/>
+    <line x1="2400" y1="1010" x2="915" y2="590" stroke="#4f8f38" stroke-width="10" opacity="0.5"/>
+  </g>
+
+  <path d="M0 600 C300 596 520 604 820 600 C1120 596 1340 604 1600 600 L1600 660 L0 660 Z" fill="#3f8036" opacity="0.35"/>
+  <rect y="560" width="1600" height="120" fill="url(#haze)"/>
+  <rect y="0" width="1600" height="300" fill="url(#glow)"/>
+
+  <g transform="translate(1150 214)" opacity="0.9">
+    <ellipse cx="-58" cy="-16" rx="27" ry="4" fill="#123d2a" opacity="0.45"/>
+    <ellipse cx="58" cy="-16" rx="27" ry="4" fill="#123d2a" opacity="0.45"/>
+    <line x1="-22" y1="-2" x2="-54" y2="-15" stroke="#123d2a" stroke-width="3"/>
+    <line x1="22" y1="-2" x2="54" y2="-15" stroke="#123d2a" stroke-width="3"/>
+    <rect x="-12" y="-10" width="24" height="13" rx="6" fill="#16432c"/>
+    <ellipse cx="0" cy="4" rx="20" ry="5" fill="#123d2a"/>
+  </g>
+
+  <rect y="600" width="1600" height="400" fill="url(#wash)"/>
+</svg>
