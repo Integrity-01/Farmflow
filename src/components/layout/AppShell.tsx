@@ -1,9 +1,13 @@
 import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/Tooltip';
 import { cn } from '@/utils/cn';
 import { useAppStore } from '@/store/app.store';
+import { authApi } from '@/services/auth';
+import { useAuthStore } from '@/store/auth.store';
 import { BottomNav } from './BottomNav';
+import { MobileNavDrawer } from './MobileNavDrawer';
 import { OfflineBanner } from './OfflineBanner';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
@@ -11,6 +15,31 @@ import { TopBar } from './TopBar';
 export function AppShell() {
   const collapsed = useAppStore((state) => state.sidebarCollapsed);
   const setOnline = useAppStore((state) => state.setOnline);
+  const user = useAuthStore((state) => state.user);
+  const userId = user?.id;
+
+  const authorizationQuery = useQuery({
+    queryKey: ['auth', 'me', userId],
+    queryFn: async () => {
+      const user = await authApi.me();
+      useAuthStore.getState().setUser(user);
+      return user;
+    },
+    enabled: Boolean(userId),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
+    retry: 0,
+  });
+
+  useEffect(() => {
+    if (authorizationQuery.isError && user?.currentOrg?.permissions) {
+      useAuthStore.getState().setUser({
+        ...user,
+        currentOrg: { ...user.currentOrg, permissions: undefined },
+      });
+    }
+  }, [authorizationQuery.isError, user]);
 
   useEffect(() => {
     const handleOnline = () => setOnline(true);
@@ -34,6 +63,7 @@ export function AppShell() {
         />
         <OfflineBanner />
         <Sidebar />
+        <MobileNavDrawer />
 
         <div
           className={cn(

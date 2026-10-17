@@ -5,7 +5,6 @@ import { BrandSplash } from '@/components/auth/BrandSplash';
 import { Button } from '@/components/ui/Button';
 import { authApi } from '@/services/auth';
 import { useAuthStore } from '@/store/auth.store';
-import type { UserRole } from '@/types';
 import { Clock, Sprout } from 'lucide-react';
 
 /** Routes a signed-in user may open even while their membership is pending. */
@@ -87,9 +86,10 @@ export function AppGuard({ children }: { children: ReactNode }) {
     return <PendingAccess />;
   }
 
-  const role = user?.role as UserRole | null;
-  if (!canAccessPath(location.pathname, role)) {
-    return <Navigate to="/" replace />;
+  const role = user?.role ?? null;
+  const permissions = user?.currentOrg?.permissions ?? null;
+  if (role && !canAccessPath(location.pathname, role, permissions)) {
+    return <Navigate to="/profile" replace />;
   }
 
   return <>{children}</>;

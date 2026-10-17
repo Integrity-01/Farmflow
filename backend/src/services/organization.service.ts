@@ -13,6 +13,7 @@ import type { OrgSummary } from '../types/org.js';
 interface MembershipRow {
   organization_id: string;
   org_name: string;
+  role_id: string;
   role_code: string;
   membership_status: string;
 }
@@ -213,7 +214,8 @@ async function countActiveAdmins(orgId: string): Promise<number> {
 export const organizationService = {
   async listMyOrgs(userId: string): Promise<OrgSummary[]> {
     const res = await pool.query<MembershipRow>(
-      `SELECT m.organization_id, o.name AS org_name, r.code AS role_code, m.status AS membership_status
+      `SELECT m.organization_id, o.name AS org_name, m.role_id, r.code AS role_code,
+              m.status AS membership_status
        FROM organization_memberships m
        JOIN organizations o ON o.id = m.organization_id
        JOIN roles r ON r.id = m.role_id
@@ -221,12 +223,16 @@ export const organizationService = {
        ORDER BY o.created_at`,
       [userId],
     );
-    return res.rows.map((r) => ({
-      id: r.organization_id,
-      name: r.org_name,
-      role: r.role_code,
-      status: r.membership_status,
-    }));
+    return Promise.all(
+      res.rows.map(async (r) => ({
+        id: r.organization_id,
+        name: r.org_name,
+        role: r.role_code,
+        roleId: r.role_id,
+        status: r.membership_status,
+        permissions: await getRolePermissions(r.role_id),
+      })),
+    );
   },
 
   async switchOrg(actor: AuthUser, orgId: string, sessionId?: string): Promise<OrgSummary> {
