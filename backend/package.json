@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "migrate": "tsx src/database/migrate.ts",
     "backfill:admin-ids": "tsx src/database/backfill-admin-ids.ts",
+    "system-admin:create": "tsx src/database/create-system-admin.ts",
     "test": "tsx --test \"tests/**/*.test.ts\"",
     "test:live": "node auth-admin-live.cjs"
   },

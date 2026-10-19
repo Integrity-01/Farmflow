@@ -19,10 +19,35 @@ const envSchema = z.object({
   DB_USER: z.string().default('root'),
   DB_PASSWORD: z.string().default(''),
   DB_NAME: z.string().default('farmflow'),
+  // Managed MySQL providers (Aiven, PlanetScale, RDS...) require TLS. Set
+  // DB_SSL=true and optionally paste the provider CA into DB_SSL_CA (PEM text;
+  // literal "\n" sequences are accepted). When no CA is supplied, set
+  // DB_SSL_REJECT_UNAUTHORIZED=false to connect without verifying the chain.
+  DB_SSL: z
+    .string()
+    .optional()
+    .transform((value) => value === 'true' || value === '1'),
+  DB_SSL_CA: z.string().optional(),
+  DB_SSL_REJECT_UNAUTHORIZED: z
+    .string()
+    .optional()
+    .transform((value) => value === undefined || (value !== 'false' && value !== '0')),
+  // Refresh-cookie SameSite policy. "auto" uses "none" in production (required
+  // when the web app and API live on different domains, e.g. Vercel + Render)
+  // and "lax" in development.
+  COOKIE_SAMESITE: z.enum(['auto', 'lax', 'strict', 'none']).default('auto'),
   JWT_SECRET: z
     .string()
     .min(32)
     .default('dev-only-secret-change-me-in-production-0123456789'),
+  // Dedicated signing secret for the isolated system-administrator environment.
+  // When unset it falls back to JWT_SECRET (dev convenience); production should
+  // set a distinct value so the two token families can never be confused.
+  SYSTEM_ADMIN_JWT_SECRET: z.string().min(32).optional(),
+  SYSTEM_ADMIN_SESSION_TTL_HOURS: z.coerce.number().int().positive().default(8),
+  SYSTEM_ADMIN_MFA_ISSUER: z.string().default('FarmFlow System'),
+  SYSTEM_ADMIN_MAX_FAILED_LOGINS: z.coerce.number().int().positive().default(5),
+  SYSTEM_ADMIN_LOCK_MINUTES: z.coerce.number().int().positive().default(15),
   EMAIL_PROVIDER: z
     .enum(['smtp', 'resend', 'sendgrid', 'ses'])
     .default('smtp'),

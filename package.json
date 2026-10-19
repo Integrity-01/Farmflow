@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && npm run typecheck -w backend",
     "migrate": "npm run migrate -w backend",
     "backfill:admin-ids": "npm run backfill:admin-ids -w backend",
+    "system-admin:create": "npm run system-admin:create -w backend",
     "test": "npm run test -w backend",
     "test:live": "npm run test:live -w backend",
     "icons": "node scripts/generate-icons.mjs"

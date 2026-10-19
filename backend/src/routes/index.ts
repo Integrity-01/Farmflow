@@ -15,6 +15,7 @@ import { categoryRouter, taskRouter } from './task.routes.js';
 import workerRoutes from './worker.routes.js';
 import weatherRoutes from './weather.routes.js';
 import orgRouter from './organization.routes.js';
+import systemRouter from './system.routes.js';
 
 const router = Router();
 
@@ -43,5 +44,6 @@ router.use('/weather', weatherRoutes);
 router.use('/organizations', orgRouter);
 router.use('/ai', aiRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/system', systemRouter);
 
 export default router;

@@ -34,6 +34,22 @@ import { Register } from '@/pages/auth/Register';
 import { ResetPassword } from '@/pages/auth/ResetPassword';
 import { Splash } from '@/pages/auth/Splash';
 import { Welcome } from '@/pages/auth/Welcome';
+import { SystemGuard, SystemGuestGuard } from '@/components/system/guards';
+import { SystemShell } from '@/components/system/SystemShell';
+import { SystemLogin } from '@/pages/system/SystemLogin';
+import { SystemForgotPassword } from '@/pages/system/SystemForgotPassword';
+import { SystemResetPassword } from '@/pages/system/SystemResetPassword';
+import { SystemChangePassword } from '@/pages/system/SystemChangePassword';
+import { SystemOverview } from '@/pages/system/SystemOverview';
+import { SystemOrganizations } from '@/pages/system/SystemOrganizations';
+import { SystemOrganizationDetail } from '@/pages/system/SystemOrganizationDetail';
+import { SystemUsers } from '@/pages/system/SystemUsers';
+import { SystemUserDetail } from '@/pages/system/SystemUserDetail';
+import { SystemAnalytics } from '@/pages/system/SystemAnalytics';
+import { SystemAuditLogs } from '@/pages/system/SystemAuditLogs';
+import { SystemHealth } from '@/pages/system/SystemHealth';
+import { SystemAdministrators } from '@/pages/system/SystemAdministrators';
+import { SystemSettings } from '@/pages/system/SystemSettings';
 
 registerServiceWorker();
 
@@ -162,6 +178,54 @@ export default function App() {
             <Route path="/design-system" element={<DesignSystem />} />
           ) : null}
           <Route path="*" element={<NotFound />} />
+        </Route>
+
+        {/* Central System Administrator console — isolated from the tenant app. */}
+        <Route
+          path="/system/login"
+          element={
+            <SystemGuestGuard>
+              <SystemLogin />
+            </SystemGuestGuard>
+          }
+        />
+        <Route
+          path="/system/forgot-password"
+          element={
+            <SystemGuestGuard>
+              <SystemForgotPassword />
+            </SystemGuestGuard>
+          }
+        />
+        <Route
+          path="/system/reset-password"
+          element={
+            <SystemGuestGuard>
+              <SystemResetPassword />
+            </SystemGuestGuard>
+          }
+        />
+        <Route
+          path="/system"
+          element={
+            <SystemGuard>
+              <SystemShell />
+            </SystemGuard>
+          }
+        >
+          <Route index element={<Navigate to="/system/overview" replace />} />
+          <Route path="overview" element={<SystemOverview />} />
+          <Route path="organizations" element={<SystemOrganizations />} />
+          <Route path="organizations/:id" element={<SystemOrganizationDetail />} />
+          <Route path="users" element={<SystemUsers />} />
+          <Route path="users/:id" element={<SystemUserDetail />} />
+          <Route path="analytics" element={<SystemAnalytics />} />
+          <Route path="audit-logs" element={<SystemAuditLogs />} />
+          <Route path="health" element={<SystemHealth />} />
+          <Route path="administrators" element={<SystemAdministrators />} />
+          <Route path="change-password" element={<SystemChangePassword />} />
+          <Route path="settings" element={<SystemSettings />} />
+          <Route path="*" element={<Navigate to="/system/overview" replace />} />
         </Route>
       </Routes>
       <Toaster />

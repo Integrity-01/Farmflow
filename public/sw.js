@@ -1,6 +1,6 @@
 /* FarmFlow service worker */
-const CACHE_NAME = 'farmflow-v5';
-const API_CACHE_NAME = 'farmflow-api-v3';
+const CACHE_NAME = 'farmflow-v6';
+const API_CACHE_NAME = 'farmflow-api-v4';
 const OFFLINE_URL = '/offline.html';
 const API_TTL_MS = 45_000;
 const PRECACHE_URLS = [
@@ -152,6 +152,12 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.pathname.startsWith('/api/')) {
+    // Central System Administrator data is sensitive and tenant-specific to a
+    // platform identity. Never cache it — a shared or public device must not be
+    // able to serve one admin's data to another. Bypass the SW entirely.
+    if (url.pathname.startsWith('/api/system')) {
+      return;
+    }
     event.respondWith(apiStaleWhileRevalidate(request));
     return;
   }

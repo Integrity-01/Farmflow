@@ -9,6 +9,7 @@ import {
   signAccessToken,
 } from '../utils/tokens.js';
 import { env } from '../config/env.js';
+import { refreshCookieSameSite, refreshCookieSecure } from '../config/cookies.js';
 import { sendEmail } from './email.service.js';
 import { emailTemplates } from './email/templates.js';
 import { pool, uid } from '../database/pool.js';
@@ -607,8 +608,8 @@ export const authService = {
 // Attach bearer refresh cookie helper metadata
 export const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: env.NODE_ENV === 'production',
+  sameSite: refreshCookieSameSite(),
+  secure: refreshCookieSecure(),
   path: '/',
   maxAge: REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
 };

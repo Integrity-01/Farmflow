@@ -1,4 +1,5 @@
-import type { AuthUser, UserRole } from './auth.js';
+import type { AuthUser } from './auth.js';
+import type { SystemAdmin } from './system.js';
 
 declare global {
   namespace Express {
@@ -6,6 +7,11 @@ declare global {
       auth?: {
         user: AuthUser;
         sessionId: string;
+      };
+      systemAdmin?: {
+        admin: SystemAdmin;
+        sessionId: string;
+        mfaVerified: boolean;
       };
     }
   }
