@@ -1,6 +1,7 @@
 import { pool } from '../database/pool.js';
 import type { AuthUser } from '../types/auth.js';
 import { roleAtLeast } from '../types/auth.js';
+import { composeTaskWhere } from '../utils/analytics-sql.js';
 
 function scopeCondition(actor: AuthUser): string {
   if (roleAtLeast(actor.role, 'farm_manager')) return '';
@@ -11,11 +12,6 @@ function scopeCondition(actor: AuthUser): string {
       SELECT farm_id FROM workers WHERE user_id = '${actor.id}')`;
   }
   return `t.assigned_to = (SELECT id FROM workers WHERE user_id = '${actor.id}')`;
-}
-
-function rangeFilter(days: number): string {
-  if (!days || days <= 0) return '';
-  return ` AND t.created_at >= now() - INTERVAL ${days} DAY`;
 }
 
 interface Row {
@@ -36,7 +32,9 @@ export const analyticsService = {
     const scopeOn = scope ? ` AND ${scope}` : '';
     const whereScope = scope ? `WHERE ${scope}` : '';
 
-    const taskWhere = `${whereScope}${rangeFilter(input.rangeDays)}`;
+    // Compose the WHERE clause from the optional scope and date range so the
+    // keyword is never emitted without a predicate (or a predicate without it).
+    const taskWhere = composeTaskWhere(scope, input.rangeDays);
 
     const [kpis, byStatus, byPriority, byFarm, byCategory, byWorker, upcoming, recent] = await Promise.all([
       pool.query<Row>(`SELECT
