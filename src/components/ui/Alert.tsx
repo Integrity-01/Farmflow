@@ -6,10 +6,10 @@ import { cn } from '@/utils/cn';
 const alertVariants = cva('flex items-start gap-3 rounded-xl border p-4 text-sm', {
   variants: {
     variant: {
-      default: 'border-slate-200 bg-white text-slate-700',
-      info: 'border-sky-200 bg-sky-50 text-sky-900',
-      success: 'border-brand-200 bg-brand-50 text-brand-900',
-      warning: 'border-amber-200 bg-amber-50 text-amber-900',
+      default: 'border-neutral-200 bg-white text-neutral-800',
+      info: 'border-brand-200 bg-brand-50 text-brand-800',
+      success: 'border-brand-200 bg-brand-50 text-brand-800',
+      warning: 'border-orange-200 bg-orange-50 text-orange-900',
       danger: 'border-red-200 bg-red-50 text-red-900',
     },
   },

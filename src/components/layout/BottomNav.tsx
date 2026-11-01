@@ -24,7 +24,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="safe-area-bottom fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-white/90 backdrop-blur-xl lg:hidden"
+      className="safe-area-bottom fixed inset-x-0 bottom-0 z-40 border-t border-neutral-200 bg-cream-100/92 backdrop-blur-xl lg:hidden"
       aria-label="Main"
     >
       <div
@@ -38,8 +38,8 @@ export function BottomNav() {
             end={to === '/dashboard'}
             className={({ isActive }) =>
               cn(
-                'flex flex-col items-center justify-center gap-0.5 rounded-xl py-1 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600',
-                isActive ? 'text-brand-700' : 'text-slate-500 hover:text-ink',
+                'mx-1 flex flex-col items-center justify-center gap-0.5 rounded-[10px] py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40',
+                isActive ? 'bg-accent-100 font-semibold text-brand-600' : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900',
               )
             }
           >

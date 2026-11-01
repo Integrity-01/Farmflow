@@ -41,15 +41,15 @@ function PendingAccess() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-slate-50 px-6 text-center">
-      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-cream-100 px-6 text-center">
+      <div className="w-full max-w-md rounded-3xl border border-neutral-200 bg-white p-8 shadow-soft">
         <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
           {orgName ? <Clock className="size-7" aria-hidden /> : <Sprout className="size-7" aria-hidden />}
         </div>
-        <h1 className="mt-5 text-xl font-bold tracking-tight text-slate-900">
+        <h1 className="mt-5 text-xl font-bold tracking-tight text-brand-700">
           {orgName ? `Joining ${orgName}` : 'No organization yet'}
         </h1>
-        <p className="mt-2 text-sm leading-6 text-slate-500">
+        <p className="mt-2 text-sm leading-6 text-muted">
           {orgName
             ? 'Your account is waiting for an administrator to approve it. Once approved, you can sign in and start working right away.'
             : 'Your account is not linked to an organization. Ask your administrator for an organization key, or contact support if you think this is a mistake.'}

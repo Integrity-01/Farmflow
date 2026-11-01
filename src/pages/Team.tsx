@@ -78,7 +78,7 @@ export function Team() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-bold tracking-tight text-slate-900">Team</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-brand-700">Team</h2>
         <p className="mt-0.5 text-sm text-slate-500">
           Manage who can access {orgName} and what they can do.
         </p>

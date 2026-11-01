@@ -17,11 +17,11 @@ export function SidebarNavGroup({ group, role, collapsed = false, onNavigate }: 
   return (
     <div className="pb-4 last:pb-0">
       {!collapsed ? (
-        <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        <p className="mb-1.5 px-3 text-[11px] font-semibold uppercase tracking-wider text-brand-200/85">
           {group.label}
         </p>
       ) : (
-        <div className="mx-auto mb-2 h-px w-6 bg-hairline" aria-hidden />
+        <div className="mx-auto mb-2 h-px w-6 bg-white/15" aria-hidden />
       )}
       <ul className={cn('space-y-1')}>
         {group.items.map((item) => (

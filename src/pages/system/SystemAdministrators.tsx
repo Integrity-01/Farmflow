@@ -137,7 +137,7 @@ export function SystemAdministrators() {
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold text-ink">System administrators</h2>
+          <h2 className="text-lg font-bold text-brand-700">System administrators</h2>
           <p className="text-sm text-muted">Platform-level identities with access to this control plane.</p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>

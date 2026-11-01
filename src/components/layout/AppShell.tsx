@@ -59,7 +59,7 @@ export function AppShell() {
       <div className="min-h-dvh">
         <div
           aria-hidden
-          className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(60rem_40rem_at_88%_-12%,rgba(168,240,90,0.18),transparent),radial-gradient(52rem_36rem_at_-12%_18%,rgba(38,116,71,0.10),transparent)]"
+          className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(60rem_40rem_at_88%_-12%,rgba(184,240,0,0.12),transparent),radial-gradient(52rem_36rem_at_-12%_18%,rgba(6,75,8,0.06),transparent)]"
         />
         <OfflineBanner />
         <Sidebar />

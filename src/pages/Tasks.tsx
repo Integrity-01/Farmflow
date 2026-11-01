@@ -60,7 +60,7 @@ function statusVariant(status: TaskStatus): NonNullable<import('@/components/ui/
     case 'todo':
       return 'default';
     case 'in_progress':
-      return 'info';
+      return 'lime';
     case 'finished':
       return 'success';
   }
@@ -167,7 +167,7 @@ export function Tasks({ mine = false }: TasksProps) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">
+          <h2 className="text-2xl font-bold tracking-tight text-brand-700">
             {mine ? 'My Tasks' : 'Tasks'}
           </h2>
           <p className="mt-0.5 text-sm text-slate-500">

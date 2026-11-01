@@ -181,7 +181,7 @@ export function NewOrganization() {
         <FormField id="organizationName" label="Organization name" required error={fieldErrors.organizationName}>
           <Input id="organizationName" autoComplete="organization" placeholder="e.g. Green Valley Farms" value={organizationName} onChange={(event) => setOrganizationName(event.target.value)} />
         </FormField>
-        <div className="border-t border-slate-100 pt-1">
+        <div className="border-t border-neutral-200 pt-1">
           <p className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
             <Sprout className="size-4 text-brand-700" aria-hidden />
             Administrator account

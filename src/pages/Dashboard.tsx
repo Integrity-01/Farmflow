@@ -1,16 +1,18 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { CloudSun, MapPin, Plus, Sprout } from 'lucide-react';
+import { CloudSun, MapPin, Plus, Sprout, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { ApiError } from '@/services/api';
 import { farmsApi } from '@/services/farms';
+import { financeApi, hasPermission } from '@/services/finance';
 import { weatherApi } from '@/services/weather';
 import { canManageFarms } from '@/services/farms';
 import { useAuthStore } from '@/store/auth.store';
 import type { Farm, FarmWeatherResponse } from '@/types';
+import { formatMoney, monthStart, today } from '@/components/finance/labels';
 import { formatTemp, weatherIcon } from '@/components/weather/labels';
 
 interface FarmWithWeather {
@@ -24,7 +26,17 @@ export function Dashboard() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   const role = useAuthStore((state) => state.user?.role) ?? null;
+  const permissions = useAuthStore((state) => state.user?.currentOrg?.permissions);
   const canManage = canManageFarms(role);
+  const canViewFinance = hasPermission(permissions, 'finance:view');
+
+  const financeQuery = useQuery({
+    queryKey: ['dashboard-finance'],
+    queryFn: () => financeApi.financial.overview({ dateFrom: monthStart(), dateTo: today() }),
+    enabled: canViewFinance,
+    retry: 0,
+    staleTime: 60_000,
+  });
 
   const overviewQuery = useQuery({
     queryKey: ['dashboard-overview'],
@@ -60,10 +72,10 @@ export function Dashboard() {
     <div className="space-y-6">
       <section className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h2 className="text-2xl font-bold tracking-tight text-brand-700 sm:text-[28px]">
             {greeting} 👋
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-muted">
             Here's what's happening on your farm today.
           </p>
         </div>
@@ -105,13 +117,13 @@ export function Dashboard() {
 
       <section aria-label="Farms and location">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-400">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-700">
             Farms &amp; location
           </h3>
           {farms.length > 0 ? (
             <Link
               to="/farms"
-              className="text-xs font-semibold text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 rounded"
+              className="rounded text-xs font-semibold text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
             >
               View all
             </Link>
@@ -154,7 +166,98 @@ export function Dashboard() {
           />
         )}
       </section>
+
+      {canViewFinance ? (
+        <section aria-label="Farm finances">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-brand-700">
+              This month&apos;s finances
+            </h3>
+            <Link
+              to="/farm-costs"
+              className="rounded text-xs font-semibold text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
+            >
+              View farm costs
+            </Link>
+          </div>
+
+          {financeQuery.isLoading ? (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {[0, 1, 2, 3].map((item) => (
+                <Skeleton key={item} className="h-24 w-full rounded-xl" />
+              ))}
+            </div>
+          ) : financeQuery.data ? (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <FinanceStat
+                label="Total spend"
+                value={formatMoney(financeQuery.data.cards.totalSpend)}
+                hint={`${financeQuery.data.cards.expenseCount} approved`}
+                tone="green"
+              />
+              <FinanceStat
+                label="Budget used"
+                value={
+                  financeQuery.data.cards.budgetUtilisation !== null
+                    ? `${financeQuery.data.cards.budgetUtilisation}%`
+                    : 'No budget'
+                }
+                hint={formatMoney(financeQuery.data.cards.budget)}
+                tone="lime"
+              />
+              <FinanceStat
+                label="Unpaid"
+                value={formatMoney(financeQuery.data.cards.unpaidValue)}
+                hint={`${financeQuery.data.cards.unpaidCount} outstanding`}
+                tone="orange"
+              />
+              <FinanceStat
+                label="Awaiting approval"
+                value={formatMoney(financeQuery.data.cards.pendingApprovalValue)}
+                hint={`${financeQuery.data.cards.pendingApprovalCount} submitted`}
+                tone="orange"
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-slate-500">Financial summary is unavailable right now.</p>
+          )}
+        </section>
+      ) : null}
     </div>
+  );
+}
+
+function FinanceStat({
+  label,
+  value,
+  hint,
+  tone = 'green',
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  tone?: 'green' | 'lime' | 'orange';
+}) {
+  const iconTone = {
+    green: 'bg-brand-50 text-brand-700',
+    lime: 'bg-accent-100 text-brand-600',
+    orange: 'bg-orange-50 text-orange-700',
+  }[tone];
+
+  return (
+    <Link
+      to="/farm-costs"
+      className="rounded-[14px] border border-neutral-200 bg-white px-4 py-3.5 shadow-soft transition-colors hover:border-brand-200 hover:bg-brand-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
+    >
+      <span className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
+        <span className={`flex size-6 items-center justify-center rounded-lg ${iconTone}`}>
+          <Wallet className="size-3.5" aria-hidden />
+        </span>
+        {label}
+      </span>
+      <span className="mt-2 block text-xl font-bold tracking-tight text-neutral-950">{value}</span>
+      <span className="block text-xs text-muted">{hint}</span>
+    </Link>
   );
 }
 
@@ -186,22 +289,22 @@ function FarmLocationRow({
   return (
     <Link
       to="/farms"
-      className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+      className="flex items-center justify-between gap-3 rounded-[14px] border border-neutral-200 bg-white px-4 py-3 shadow-soft transition-colors hover:border-brand-200 hover:bg-brand-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
     >
       <div className="flex min-w-0 items-center gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent-100 text-brand-700">
           <MapPin className="size-4" aria-hidden />
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-sm font-semibold text-slate-900">{farm.name}</span>
-          <span className="block truncate text-xs text-slate-500">{locationLine}</span>
+          <span className="block truncate text-sm font-semibold text-neutral-950">{farm.name}</span>
+          <span className="block truncate text-xs text-muted">{locationLine}</span>
         </span>
       </div>
 
       <div className="flex shrink-0 items-center gap-3">
         {weather ? (
           <span
-            className="flex items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 text-sm font-semibold text-slate-700"
+            className="flex items-center gap-1.5 rounded-lg bg-brand-50 px-2.5 py-1.5 text-sm font-semibold text-brand-700"
             title={weather.current.label}
           >
             {(() => {

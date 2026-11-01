@@ -12,14 +12,14 @@ Table.displayName = 'Table';
 
 export const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
   ({ className, ...props }, ref) => (
-    <thead ref={ref} className={cn('bg-slate-50', className)} {...props} />
+    <thead ref={ref} className={cn('bg-cream-300/70', className)} {...props} />
   ),
 );
 TableHeader.displayName = 'TableHeader';
 
 export const TableBody = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
   ({ className, ...props }, ref) => (
-    <tbody ref={ref} className={cn('divide-y divide-slate-100', className)} {...props} />
+    <tbody ref={ref} className={cn('divide-y divide-neutral-200', className)} {...props} />
   ),
 );
 TableBody.displayName = 'TableBody';
@@ -28,7 +28,7 @@ export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTable
   ({ className, ...props }, ref) => (
     <tr
       ref={ref}
-      className={cn('transition-colors hover:bg-slate-50', className)}
+      className={cn('transition-colors hover:bg-brand-50/70', className)}
       {...props}
     />
   ),
@@ -40,7 +40,7 @@ export const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLT
     <th
       ref={ref}
       className={cn(
-        'h-11 px-4 text-left align-middle text-xs font-semibold uppercase tracking-wide text-slate-500',
+        'h-11 px-4 text-left align-middle text-xs font-semibold uppercase tracking-wide text-brand-700',
         className,
       )}
       {...props}
@@ -58,7 +58,7 @@ TableCell.displayName = 'TableCell';
 
 export const TableCaption = forwardRef<HTMLTableCaptionElement, HTMLAttributes<HTMLTableCaptionElement>>(
   ({ className, ...props }, ref) => (
-    <caption ref={ref} className={cn('mt-4 text-sm text-slate-500', className)} {...props} />
+    <caption ref={ref} className={cn('mt-4 text-sm text-muted', className)} {...props} />
   ),
 );
 TableCaption.displayName = 'TableCaption';

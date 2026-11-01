@@ -75,10 +75,10 @@ export function AcceptInvitation() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
+    <div className="flex min-h-dvh items-center justify-center bg-cream-100 px-4 py-10">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-lg font-bold text-slate-900">
+          <CardTitle className="text-lg font-bold text-brand-700">
             {token ? 'Accept your invitation' : 'Join an organization'}
           </CardTitle>
         </CardHeader>
@@ -107,7 +107,7 @@ export function AcceptInvitation() {
             </Alert>
           ) : (
             <>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted">
                 Enter the access key an administrator shared with you. You will be added as a
                 field officer and an administrator must approve you before you can access data.
               </p>

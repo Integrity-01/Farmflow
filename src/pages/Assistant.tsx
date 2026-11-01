@@ -126,7 +126,7 @@ export function Assistant() {
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="text-xl font-bold tracking-tight text-slate-900">AI Assistant</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-brand-700">AI Assistant</h2>
         <p className="mt-0.5 text-sm text-slate-500">
           Ask about your farm, or let FarmFlow suggest what to work on next.
         </p>
@@ -174,7 +174,7 @@ export function Assistant() {
                       key={prompt}
                       type="button"
                       onClick={() => setInput(prompt)}
-                      className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-xs font-medium text-brand-800 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+                      className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
                     >
                       {prompt}
                     </button>

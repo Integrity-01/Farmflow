@@ -9,12 +9,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       ref={ref}
       type={type}
       className={cn(
-        'flex h-10 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 shadow-sm transition-colors',
-        'placeholder:text-slate-400',
-        'hover:border-slate-400',
-        'focus-visible:border-brand-500',
-        'disabled:cursor-not-allowed disabled:opacity-60',
-        'aria-[invalid=true]:border-red-500',
+        'flex h-10 w-full rounded-[10px] border border-neutral-300 bg-white px-3.5 text-sm text-neutral-950 shadow-sm transition-colors',
+        'placeholder:text-neutral-400',
+        'hover:border-neutral-400',
+        'focus-visible:border-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/25',
+        'disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:opacity-60',
+        'aria-[invalid=true]:border-red-500 aria-[invalid=true]:focus-visible:ring-red-500/25',
         className,
       )}
       {...props}

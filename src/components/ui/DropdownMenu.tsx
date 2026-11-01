@@ -17,7 +17,7 @@ export const DropdownMenuContent = forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 min-w-44 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 text-slate-900 shadow-popover',
+        'z-50 min-w-44 overflow-hidden rounded-xl border border-neutral-200 bg-white p-1 text-neutral-950 shadow-popover',
         'data-[state=open]:animate-pop-in data-[state=closed]:animate-pop-out',
         className,
       )}
@@ -36,7 +36,7 @@ export const DropdownMenuItem = forwardRef<
     ref={ref}
     className={cn(
       'relative flex cursor-default select-none items-center gap-2 rounded-lg px-2.5 py-2 text-sm outline-none transition-colors',
-      'focus:bg-brand-50 focus:text-brand-900',
+      'focus:bg-brand-50 focus:text-brand-700',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       inset && 'pl-8',
       className,
@@ -56,7 +56,7 @@ export const DropdownMenuCheckboxItem = forwardRef<
     checked={checked}
     className={cn(
       'relative flex cursor-default select-none items-center rounded-lg py-2 pl-8 pr-2.5 text-sm outline-none transition-colors',
-      'focus:bg-brand-50 focus:text-brand-900',
+      'focus:bg-brand-50 focus:text-brand-700',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className,
     )}
@@ -81,7 +81,7 @@ export const DropdownMenuRadioItem = forwardRef<
     ref={ref}
     className={cn(
       'relative flex cursor-default select-none items-center rounded-lg py-2 pl-8 pr-2.5 text-sm outline-none transition-colors',
-      'focus:bg-brand-50 focus:text-brand-900',
+      'focus:bg-brand-50 focus:text-brand-700',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className,
     )}
@@ -138,7 +138,7 @@ export const DropdownMenuSubTrigger = forwardRef<
     ref={ref}
     className={cn(
       'relative flex cursor-default select-none items-center gap-2 rounded-lg px-2.5 py-2 text-sm outline-none transition-colors',
-      'focus:bg-brand-50 focus:text-brand-900',
+      'focus:bg-brand-50 focus:text-brand-700',
       'data-[state=open]:bg-brand-50',
       inset && 'pl-8',
       className,

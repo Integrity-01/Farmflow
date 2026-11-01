@@ -33,7 +33,7 @@ export function SidebarFooter({ collapsed = false, onToggleCollapse }: SidebarFo
   return (
     <div
       className={cn(
-        'shrink-0 border-t border-hairline p-3',
+        'shrink-0 border-t border-white/10 p-3',
         collapsed ? 'flex flex-col items-center gap-2' : 'flex items-center gap-2',
       )}
     >
@@ -43,7 +43,7 @@ export function SidebarFooter({ collapsed = false, onToggleCollapse }: SidebarFo
             type="button"
             aria-label="Account menu"
             className={cn(
-              'flex min-w-0 items-center gap-3 rounded-xl p-1.5 text-left transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40',
+              'flex min-w-0 items-center gap-3 rounded-xl p-1.5 text-left transition-colors hover:bg-forest-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-forest-900',
               collapsed ? 'justify-center' : 'flex-1',
             )}
           >
@@ -52,10 +52,10 @@ export function SidebarFooter({ collapsed = false, onToggleCollapse }: SidebarFo
             </Avatar>
             {!collapsed ? (
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-forest-900">
+                <span className="block truncate text-sm font-semibold text-white">
                   {user?.name ?? 'Your account'}
                 </span>
-                <span className="block truncate text-xs text-muted">{subtitle}</span>
+                <span className="block truncate text-xs text-brand-200/80">{subtitle}</span>
               </span>
             ) : null}
           </button>
@@ -97,7 +97,7 @@ export function SidebarFooter({ collapsed = false, onToggleCollapse }: SidebarFo
               onClick={onToggleCollapse}
               aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               className={cn(
-                'flex size-9 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-forest-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40',
+                'flex size-9 items-center justify-center rounded-xl text-brand-200 transition-colors hover:bg-forest-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-forest-900',
                 collapsed && 'w-full',
               )}
             >

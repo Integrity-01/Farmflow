@@ -2,22 +2,15 @@ import { createConnection } from 'mysql2/promise';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { config } from 'dotenv';
+import { buildConnectionConfig } from './connection-config.js';
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.resolve(dirname, '../../../database/migrations');
 
-config({ path: path.resolve(dirname, '../../../.env') });
-
+// Same DATABASE_URL / DB_SSL settings as the API pool (TLS to Aiven included).
 const connection = await createConnection({
-  host: process.env.DB_HOST ?? 'localhost',
-  port: Number(process.env.DB_PORT ?? 3306),
-  user: process.env.DB_USER ?? 'root',
-  password: process.env.DB_PASSWORD ?? '',
-  database: process.env.DB_NAME ?? 'farmflow',
+  ...buildConnectionConfig(),
   multipleStatements: true,
-  charset: 'utf8mb4',
-  timezone: 'local',
 });
 
 let exitCode = 0;

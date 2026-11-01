@@ -25,7 +25,7 @@ export function Progress({
       aria-valuemax={max}
       aria-valuenow={clamped}
       aria-label={props['aria-label'] ?? 'Progress'}
-      className={cn('relative h-2 w-full overflow-hidden rounded-full bg-slate-200', className)}
+      className={cn('relative h-2 w-full overflow-hidden rounded-full bg-neutral-200', className)}
     >
       <div
         className={cn('h-full rounded-full bg-brand-600 transition-[width] duration-300', indicatorClassName)}

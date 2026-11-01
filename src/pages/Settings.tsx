@@ -199,7 +199,7 @@ export function Settings() {
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Settings</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-brand-700">Settings</h2>
         <p className="mt-1 text-sm text-slate-500">Manage your account, notifications and security.</p>
       </section>
 

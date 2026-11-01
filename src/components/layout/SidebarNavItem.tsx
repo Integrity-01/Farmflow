@@ -5,14 +5,14 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip
 import { navLabel, type NavItem } from './nav';
 
 const BASE = [
-  'group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium',
+  'group flex w-full items-center gap-3 rounded-[10px] px-3 py-2.5 text-sm font-medium',
   'transition-colors duration-150',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 focus-visible:ring-offset-forest-900',
 ].join(' ');
 
-const ACTIVE = 'bg-forest-50 font-semibold text-forest-900 ring-1 ring-inset ring-hairline';
-const INACTIVE = 'text-muted hover:bg-accent-200/50 hover:text-forest-900';
-const DISABLED = 'cursor-not-allowed text-slate-300 hover:bg-transparent';
+const ACTIVE = 'bg-accent-400 font-semibold text-brand-600';
+const INACTIVE = 'text-white hover:bg-forest-600 hover:text-white';
+const DISABLED = 'cursor-not-allowed text-brand-200/40 hover:bg-transparent';
 
 export interface SidebarNavItemProps {
   item: NavItem;

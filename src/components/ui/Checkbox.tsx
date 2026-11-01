@@ -10,8 +10,9 @@ export const Checkbox = forwardRef<
   <CheckboxPrimitive.Root
     ref={ref}
     className={cn(
-      'peer flex size-5 shrink-0 items-center justify-center rounded-md border border-slate-300 bg-white transition-colors',
-      'hover:border-slate-400',
+      'peer flex size-5 shrink-0 items-center justify-center rounded-md border border-neutral-300 bg-white transition-colors',
+      'hover:border-neutral-400',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/30 focus-visible:ring-offset-2',
       'data-[state=checked]:border-brand-600 data-[state=checked]:bg-brand-600',
       'disabled:cursor-not-allowed disabled:opacity-50',
       className,

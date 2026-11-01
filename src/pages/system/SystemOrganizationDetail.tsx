@@ -113,7 +113,7 @@ export function SystemOrganizationDetail() {
         <CardContent className="flex flex-col gap-5 p-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="truncate text-xl font-bold tracking-tight text-ink">{data.name}</h2>
+              <h2 className="truncate text-xl font-bold tracking-tight text-brand-700">{data.name}</h2>
               <Badge variant={STATUS_VARIANT[data.status] ?? 'default'}>{humanizeAction(data.status)}</Badge>
               <Badge variant="outline">{humanizeAction(data.verificationStatus)}</Badge>
             </div>

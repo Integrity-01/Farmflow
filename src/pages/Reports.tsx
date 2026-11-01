@@ -137,7 +137,7 @@ export function Reports() {
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Reports</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-brand-700">Reports</h2>
         <p className="mt-1 text-sm text-slate-500">Generate CSV exports of your farm operations.</p>
       </section>
 

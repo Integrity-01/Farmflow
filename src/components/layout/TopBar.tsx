@@ -42,13 +42,13 @@ export function TopBar() {
   const visibleLabel = current && canAccessPath(pathname, role, permissions) ? navLabel(current, role) : undefined;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-hairline bg-white/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-neutral-200 bg-cream-100/85 backdrop-blur-xl">
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
         <button
           type="button"
           onClick={toggleMobileNav}
           aria-label="Open navigation"
-          className="flex size-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 lg:hidden"
+          className="flex size-10 items-center justify-center rounded-xl text-neutral-600 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40 lg:hidden"
         >
           <Menu className="size-5" aria-hidden />
         </button>
@@ -57,10 +57,10 @@ export function TopBar() {
           <div className="flex size-9 items-center justify-center rounded-xl bg-brand-600 text-white">
             <Sprout className="size-5" aria-hidden />
           </div>
-          <span className="text-lg font-bold tracking-tight text-forest-900">FarmFlow</span>
+          <span className="text-lg font-bold tracking-tight text-brand-700">FarmFlow</span>
         </Link>
 
-        <h1 className="hidden text-sm font-semibold text-forest-900 sm:block lg:text-base">
+        <h1 className="hidden text-sm font-semibold text-brand-700 sm:block lg:text-base">
           {visibleLabel ?? 'FarmFlow'}
         </h1>
 
@@ -81,11 +81,11 @@ export function TopBar() {
           <Link
             to="/notifications"
             aria-label="Notifications"
-            className="relative flex size-10 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+            className="relative flex size-10 items-center justify-center rounded-xl text-neutral-600 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
           >
             <Bell className="size-5" aria-hidden />
             {unreadCount > 0 ? (
-              <span className="absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full bg-brand-600 px-1 text-[10px] font-bold leading-4 text-white">
+              <span className="absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full bg-orange-600 px-1 text-[10px] font-bold leading-4 text-white">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             ) : (
@@ -107,8 +107,8 @@ export function TopBar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
-                <span className="block text-sm font-semibold text-slate-900">{user?.name ?? 'FarmFlow'}</span>
-                <span className="block text-xs font-normal text-slate-500">{user?.email ?? 'member@farmflow'}</span>
+                <span className="block text-sm font-semibold text-neutral-950">{user?.name ?? 'FarmFlow'}</span>
+                <span className="block text-xs font-normal text-muted">{user?.email ?? 'member@farmflow'}</span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>

@@ -83,7 +83,7 @@ export function SystemLogin() {
     <div className="flex min-h-dvh items-center justify-center bg-forest-950 px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-7 flex flex-col items-center text-center">
-          <div className="flex size-16 items-center justify-center rounded-2xl bg-accent-400 text-forest-950 shadow-glass">
+          <div className="flex size-16 items-center justify-center rounded-2xl bg-accent-400 text-brand-600 shadow-glass">
             <ShieldCheck className="size-8" aria-hidden />
           </div>
           <h1 className="mt-5 text-2xl font-bold tracking-tight text-white">FarmFlow System</h1>

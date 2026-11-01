@@ -18,7 +18,7 @@ export function MobileNavDrawer() {
       <DialogPortal>
         <DialogOverlay className="lg:hidden" />
         <DialogPrimitive.Content
-          className="fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col border-r border-hairline bg-white shadow-modal transition-transform duration-200 ease-out data-[state=closed]:-translate-x-full data-[state=open]:animate-slide-in-from-left lg:hidden"
+          className="fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col border-r border-forest-700 bg-forest-900 shadow-modal transition-transform duration-200 ease-out data-[state=closed]:-translate-x-full data-[state=open]:animate-slide-in-from-left lg:hidden"
           aria-label="Navigation"
         >
           <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
@@ -28,7 +28,7 @@ export function MobileNavDrawer() {
 
           <DialogPrimitive.Close
             aria-label="Close navigation"
-            className="absolute right-3 top-4 z-10 flex size-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+            className="absolute right-3 top-4 z-10 flex size-8 items-center justify-center rounded-lg text-brand-200 transition-colors hover:bg-forest-600 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-400"
           >
             <X className="size-4" aria-hidden />
           </DialogPrimitive.Close>

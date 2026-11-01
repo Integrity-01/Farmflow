@@ -15,7 +15,7 @@ export const TooltipContent = forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        'z-50 rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-slate-50 shadow-max',
+        'z-50 rounded-lg bg-forest-950 px-2.5 py-1.5 text-xs font-medium text-white shadow-popover',
         'data-[state=delayed-open]:animate-pop-in',
         className,
       )}

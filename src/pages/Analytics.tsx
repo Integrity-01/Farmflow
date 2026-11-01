@@ -126,7 +126,7 @@ export function Analytics() {
     return (
       <div className="space-y-6">
         <section>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Analytics</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-brand-700">Analytics</h2>
           <p className="mt-1 text-sm text-slate-500">We couldn't load your analytics.</p>
         </section>
         <Card>
@@ -148,7 +148,7 @@ export function Analytics() {
     return (
       <div className="space-y-6">
         <section>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Analytics</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-brand-700">Analytics</h2>
           <p className="mt-1 text-sm text-slate-500">Task activity at a glance.</p>
         </section>
         <div className="space-y-4">
@@ -186,7 +186,7 @@ export function Analytics() {
     <div className="space-y-6">
       <section className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Analytics</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-brand-700">Analytics</h2>
           <p className="mt-1 text-sm text-slate-500">
             Task activity at a glance. Homegrown charts, zero extra libraries.
           </p>

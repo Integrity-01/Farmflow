@@ -1,22 +1,9 @@
 import { createConnection } from 'mysql2/promise';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { config } from 'dotenv';
 import { generateAdminId } from '../utils/admin-id.js';
+import { buildConnectionConfig } from './connection-config.js';
 
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-
-config({ path: path.resolve(dirname, '../../../.env') });
-
-const connection = await createConnection({
-  host: process.env.DB_HOST ?? 'localhost',
-  port: Number(process.env.DB_PORT ?? 3306),
-  user: process.env.DB_USER ?? 'root',
-  password: process.env.DB_PASSWORD ?? '',
-  database: process.env.DB_NAME ?? 'farmflow',
-  charset: 'utf8mb4',
-  timezone: 'local',
-});
+// Same DATABASE_URL / DB_SSL settings as the API pool (TLS to Aiven included).
+const connection = await createConnection(buildConnectionConfig());
 
 let exitCode = 0;
 

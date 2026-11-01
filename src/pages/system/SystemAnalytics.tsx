@@ -16,9 +16,9 @@ const RANGES = [
 ];
 
 const SERIES = [
-  { key: 'organizations', label: 'Organizations', color: '#226b41' },
-  { key: 'users', label: 'Users', color: '#0ea5e9' },
-  { key: 'tasks', label: 'Tasks', color: '#a8f05a' },
+  { key: 'organizations', label: 'Organizations', color: '#064b08' },
+  { key: 'users', label: 'Users', color: '#329344' },
+  { key: 'tasks', label: 'Tasks', color: '#b8f000' },
 ] as const;
 
 function TrendChart({ series }: { series: AnalyticsSeriesPoint[] }) {

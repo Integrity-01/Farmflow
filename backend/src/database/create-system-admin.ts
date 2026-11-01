@@ -1,13 +1,8 @@
 import { createConnection } from 'mysql2/promise';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { config } from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { generateSystemAdminId } from '../utils/system-admin-id.js';
 import { generateTemporaryPassword } from '../utils/password.js';
-
-const dirname = path.dirname(fileURLToPath(import.meta.url));
-config({ path: path.resolve(dirname, '../../../.env') });
+import { buildConnectionConfig } from './connection-config.js';
 
 interface Args {
   name?: string;
@@ -43,15 +38,9 @@ if (!args.name) {
   process.exit(1);
 }
 
-const connection = await createConnection({
-  host: process.env.DB_HOST ?? 'localhost',
-  port: Number(process.env.DB_PORT ?? 3306),
-  user: process.env.DB_USER ?? 'root',
-  password: process.env.DB_PASSWORD ?? '',
-  database: process.env.DB_NAME ?? 'farmflow',
-  charset: 'utf8mb4',
-  timezone: 'local',
-});
+// Uses the same DATABASE_URL / DB_SSL settings as the API pool, so this works
+// against Aiven (TLS) as well as a local MySQL server.
+const connection = await createConnection(buildConnectionConfig());
 
 let exitCode = 0;
 

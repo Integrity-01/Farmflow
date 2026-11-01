@@ -78,8 +78,8 @@ export function Register() {
           <Link to="/login/account" state={verifiedOrg} className="font-semibold text-brand-700 hover:underline">
             Sign in
           </Link>
-          <span className="mx-2 text-slate-300">·</span>
-          <Link to="/login/user" className="font-semibold text-slate-600 hover:underline">
+          <span className="mx-2 text-neutral-400">·</span>
+          <Link to="/login/user" className="font-semibold text-brand-700 hover:underline">
             Change key
           </Link>
         </>

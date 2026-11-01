@@ -34,18 +34,18 @@ export function SystemTopBar({ user, onMenuClick, title }: SystemTopBarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-hairline bg-white/80 px-4 backdrop-blur-lg sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-neutral-200 bg-cream-100/85 px-4 backdrop-blur-lg sm:px-6">
       <button
         type="button"
         onClick={onMenuClick}
-        className="flex size-10 items-center justify-center rounded-xl text-ink hover:bg-pale lg:hidden"
+        className="flex size-10 items-center justify-center rounded-xl text-neutral-600 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40 lg:hidden"
         aria-label="Open navigation"
       >
         <Menu className="size-5" aria-hidden />
       </button>
 
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-base font-bold tracking-tight text-ink sm:text-lg">{title}</h1>
+        <h1 className="truncate text-base font-bold tracking-tight text-brand-700 sm:text-lg">{title}</h1>
       </div>
 
       <Badge variant="success" className="hidden sm:inline-flex">
@@ -57,14 +57,14 @@ export function SystemTopBar({ user, onMenuClick, title }: SystemTopBarProps) {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="flex items-center gap-2 rounded-xl px-1.5 py-1.5 hover:bg-pale"
+            className="flex items-center gap-2 rounded-xl px-1.5 py-1.5 hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
             aria-label="Account menu"
           >
             <span className="flex size-9 items-center justify-center rounded-full bg-forest-900 text-xs font-bold text-white">
               {initialsOf(user.name)}
             </span>
             <span className="hidden text-left sm:block">
-              <span className="block max-w-[10rem] truncate text-sm font-semibold text-ink">
+              <span className="block max-w-[10rem] truncate text-sm font-semibold text-neutral-950">
                 {user.name}
               </span>
               <span className="block font-mono text-[11px] text-muted">{user.adminId}</span>
@@ -73,7 +73,7 @@ export function SystemTopBar({ user, onMenuClick, title }: SystemTopBarProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuLabel>
-            <span className="block truncate text-sm font-semibold text-ink">{user.name}</span>
+            <span className="block truncate text-sm font-semibold text-neutral-950">{user.name}</span>
             <span className="block truncate font-mono text-[11px] text-muted">{user.adminId}</span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />

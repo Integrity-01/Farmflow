@@ -7,14 +7,14 @@ import { cn } from '@/utils/cn';
 export const ToastProvider = ToastPrimitives.Provider;
 
 const toastVariants = cva(
-  'group pointer-events-auto relative flex w-full items-start justify-between gap-3 overflow-hidden rounded-xl border bg-white p-4 pl-5 text-slate-900 shadow-modal',
+  'group pointer-events-auto relative flex w-full items-start justify-between gap-3 overflow-hidden rounded-xl border bg-white p-4 pl-5 text-neutral-950 shadow-modal',
   {
     variants: {
       variant: {
-        default: 'border-slate-200',
+        default: 'border-neutral-200',
         success: 'border-brand-200',
-        info: 'border-sky-200',
-        warning: 'border-amber-200',
+        info: 'border-brand-200',
+        warning: 'border-orange-200',
         danger: 'border-red-200',
       },
     },
@@ -25,10 +25,10 @@ const toastVariants = cva(
 );
 
 const barColors: Record<NonNullable<VariantProps<typeof toastVariants>['variant']>, string> = {
-  default: 'bg-slate-300',
+  default: 'bg-neutral-300',
   success: 'bg-brand-500',
-  info: 'bg-sky-500',
-  warning: 'bg-amber-500',
+  info: 'bg-brand-500',
+  warning: 'bg-orange-600',
   danger: 'bg-red-500',
 };
 
@@ -55,7 +55,7 @@ export const Toast = forwardRef<ElementRef<typeof ToastPrimitives.Root>, ToastPr
       <div className="min-w-0 flex-1 space-y-1">{props.children}</div>
       <ToastPrimitives.Close
         aria-label="Dismiss"
-        className="absolute right-3 top-3 flex size-6 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+        className="absolute right-3 top-3 flex size-6 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
       >
         <X className="size-3.5" aria-hidden />
       </ToastPrimitives.Close>
@@ -84,7 +84,7 @@ export const ToastDescription = forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Description
     ref={ref}
-    className={cn('text-sm text-slate-500', className)}
+    className={cn('text-sm text-muted', className)}
     {...props}
   />
 ));

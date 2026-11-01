@@ -59,7 +59,7 @@ export function SystemUserDetail() {
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-xl font-bold tracking-tight text-ink">{data.name}</h2>
+            <h2 className="text-xl font-bold tracking-tight text-brand-700">{data.name}</h2>
             <Badge variant={data.isActive ? 'success' : 'danger'}>{data.isActive ? 'Active' : 'Inactive'}</Badge>
             <Badge variant="outline">{humanizeRole(data.role)}</Badge>
           </div>

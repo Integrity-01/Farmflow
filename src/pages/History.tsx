@@ -164,7 +164,7 @@ export function History() {
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">History</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-brand-700">History</h2>
         <p className="mt-1 text-sm text-slate-500">An audit trail of everything happening in your tasks.</p>
       </section>
 

@@ -6,6 +6,10 @@ import {
   Warehouse,
   Package,
   Users,
+  Receipt,
+  FlaskConical,
+  HardHat,
+  Landmark,
   BarChart3,
   CloudSun,
   Sparkles,
@@ -116,6 +120,15 @@ export const navGroups: NavGroup[] = [
       },
       { to: '/inventory', label: 'Inventory', icon: Package, minRole: 'supervisor', permissions: ['inventory:view'] },
       { to: '/workers', label: 'Workers', icon: Users, minRole: 'supervisor', permissions: ['worker:view'] },
+    ],
+  },
+  {
+    label: 'Finance',
+    items: [
+      { to: '/expenses', label: 'Expenses', icon: Receipt, minRole: 'field_officer', permissions: ['expense:view'] },
+      { to: '/chemicals', label: 'Chemicals', icon: FlaskConical, minRole: 'field_officer', permissions: ['chemical:view'] },
+      { to: '/labour', label: 'Labour', icon: HardHat, minRole: 'field_officer', permissions: ['labour:view'] },
+      { to: '/farm-costs', label: 'Farm Costs', icon: Landmark, minRole: 'supervisor', permissions: ['finance:view'] },
     ],
   },
   {

@@ -9,7 +9,7 @@ let bootstrapped = false;
 export function SystemBrandSplash() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-forest-950 text-white">
-      <div className="flex size-16 items-center justify-center rounded-2xl bg-accent-400 text-forest-950 shadow-glass">
+      <div className="flex size-16 items-center justify-center rounded-2xl bg-accent-400 text-brand-600 shadow-glass">
         <ShieldCheck className="size-8" aria-hidden />
       </div>
       <p className="mt-5 text-sm font-semibold tracking-wide text-forest-100">FarmFlow System</p>

@@ -51,19 +51,19 @@ export function Welcome() {
               key={option.key}
               type="button"
               onClick={() => go(option.to)}
-              className="group flex w-full items-center gap-4 rounded-2xl border border-hairline bg-white/70 p-4 text-left transition hover:border-accent-400 hover:bg-accent-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+              className="group flex w-full items-center gap-4 rounded-2xl border border-neutral-200 bg-white/70 p-4 text-left transition hover:border-accent-400 hover:bg-accent-100/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
             >
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-forest-50 text-forest-700 transition group-hover:bg-accent-300 group-hover:text-forest-900">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 transition group-hover:bg-accent-300 group-hover:text-brand-600">
                 <Icon className="size-5" aria-hidden />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-sm font-semibold text-forest-900">{option.title}</span>
+                <span className="block text-sm font-semibold text-brand-700">{option.title}</span>
                 <span className="mt-0.5 block text-xs leading-5 text-muted">
                   {option.description}
                 </span>
               </span>
               <ArrowRight
-                className="size-4 shrink-0 text-slate-300 transition group-hover:translate-x-0.5 group-hover:text-brand-600"
+                className="size-4 shrink-0 text-neutral-400 transition group-hover:translate-x-0.5 group-hover:text-brand-600"
                 aria-hidden
               />
             </button>

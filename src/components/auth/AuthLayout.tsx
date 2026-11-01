@@ -40,7 +40,7 @@ export function AuthLayout({
         />
         <div className="sticky top-0 flex h-dvh flex-col justify-between p-10">
           <Link to="/login" className="relative z-10 flex items-center gap-2 text-white">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-accent-400 text-forest-900 shadow-soft">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-accent-400 text-brand-600 shadow-soft">
               <Sprout className="size-5" aria-hidden />
             </span>
             <span className="text-lg font-bold tracking-tight">FarmFlow</span>
@@ -82,13 +82,13 @@ export function AuthLayout({
         </div>
       </aside>
 
-      <div className="flex min-h-dvh flex-col">
+      <div className="flex min-h-dvh flex-col bg-cream-100">
         <header className="flex h-16 items-center px-5 sm:px-8 lg:hidden">
           <Link to="/login" className="flex items-center gap-2">
             <span className="flex size-9 items-center justify-center rounded-xl bg-brand-600 text-white">
               <Sprout className="size-5" aria-hidden />
             </span>
-            <span className="text-lg font-bold tracking-tight text-slate-900">FarmFlow</span>
+            <span className="text-lg font-bold tracking-tight text-brand-700">FarmFlow</span>
           </Link>
         </header>
 
@@ -99,7 +99,7 @@ export function AuthLayout({
                 {eyebrow}
               </p>
             ) : null}
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-forest-900 sm:text-3xl">
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-brand-700 sm:text-3xl">
               {title}
             </h1>
             {subtitle ? <p className="mt-1.5 text-sm text-muted">{subtitle}</p> : null}

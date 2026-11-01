@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { createPool } from 'mysql2/promise';
-import { env } from '../config/env.js';
+import { buildConnectionConfig } from './connection-config.js';
 
 export interface QueryResult<T = any> {
   rows: T[];
@@ -74,39 +74,11 @@ function coerceRow<T>(row: Record<string, unknown>): T {
   return out as T;
 }
 
-function buildSslConfig() {
-  if (!env.DB_SSL) return undefined;
-  const ssl: { rejectUnauthorized: boolean; ca?: string } = {
-    rejectUnauthorized: env.DB_SSL_REJECT_UNAUTHORIZED,
-  };
-  // Managed providers ship a CA as a PEM file; when pasted into an env var the
-  // newlines often arrive escaped, so normalise literal "\n" sequences.
-  if (env.DB_SSL_CA) ssl.ca = env.DB_SSL_CA.replace(/\\n/g, '\n');
-  return ssl;
-}
-
-function buildConfig() {
-  const ssl = buildSslConfig();
-  if (env.DATABASE_URL) {
-    return { uri: env.DATABASE_URL, ...(ssl ? { ssl } : {}) };
-  }
-  return {
-    host: env.DB_HOST,
-    port: env.DB_PORT,
-    user: env.DB_USER,
-    password: env.DB_PASSWORD,
-    database: env.DB_NAME,
-    ...(ssl ? { ssl } : {}),
-  };
-}
-
 const mysql = createPool({
-  ...buildConfig(),
+  ...buildConnectionConfig(),
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  charset: 'utf8mb4',
-  timezone: 'local',
   dateStrings: false,
   decimalNumbers: false,
 });

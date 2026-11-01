@@ -24,7 +24,13 @@ export function AppSidebar({ collapsed = false, onToggleCollapse, onNavigate, cl
   const groups = visibleNavGroups(role, permissions);
 
   return (
-    <div className={className ? `flex h-full flex-col ${className}` : 'flex h-full flex-col'}>
+    <div
+      className={
+        className
+          ? `flex h-full flex-col bg-forest-900 text-white ${className}`
+          : 'flex h-full flex-col bg-forest-900 text-white'
+      }
+    >
       <SidebarHeader collapsed={collapsed} onNavigate={onNavigate} />
 
       <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Main">

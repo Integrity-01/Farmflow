@@ -139,6 +139,47 @@ async function request<T>(
   return payload as T;
 }
 
+export async function downloadFile(path: string, fallbackName: string): Promise<void> {
+  async function attempt(): Promise<Response> {
+    const headers = new Headers();
+    const token = authHooks.getAccessToken?.();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
+    return fetch(apiUrl(path), { credentials: 'include', headers });
+  }
+
+  let response = await attempt();
+  if (response.status === 401 && authHooks.refreshSession) {
+    const refreshed = await authHooks.refreshSession();
+    if (refreshed) {
+      response = await attempt();
+    }
+  }
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as ApiErrorPayload | null;
+    throw new ApiError(
+      humanMessage(payload ?? undefined, response.status),
+      response.status,
+      payload?.code ?? 'DOWNLOAD_FAILED',
+    );
+  }
+
+  const disposition = response.headers.get('content-disposition') ?? '';
+  const match = /filename="?([^";]+)"?/i.exec(disposition);
+  const filename = match?.[1] ?? fallbackName;
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
 export const api = {
   get: <T>(path: string, requestOptions?: RequestOptions) =>
     request<T>(path, undefined, requestOptions),

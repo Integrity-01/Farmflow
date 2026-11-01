@@ -26,7 +26,7 @@ export function farmStatusBadge(status: FarmStatus): { label: string; variant: B
     case 'active':
       return { label: 'Active', variant: 'success' };
     case 'inactive':
-      return { label: 'Inactive', variant: 'warning' };
+      return { label: 'Inactive', variant: 'default' };
     case 'archived':
       return { label: 'Archived', variant: 'default' };
   }
@@ -39,7 +39,7 @@ export function fieldStatusBadge(status: FieldStatus): { label: string; variant:
     case 'harvested':
       return { label: 'Harvested', variant: 'info' };
     case 'fallow':
-      return { label: 'Fallow', variant: 'warning' };
+      return { label: 'Fallow', variant: 'default' };
     case 'inactive':
       return { label: 'Inactive', variant: 'default' };
   }

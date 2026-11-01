@@ -118,7 +118,7 @@ export function Notifications() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Notifications</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-brand-700">Notifications</h2>
           <p className="mt-0.5 text-sm text-slate-500">
             {listQuery.data && !listQuery.isFetching
               ? `${listQuery.data.total} notification${listQuery.data.total === 1 ? '' : 's'}`

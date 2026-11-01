@@ -38,12 +38,12 @@ export function EntryChoice() {
       }
     >
       <div className="space-y-3">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+        <div className="rounded-xl border border-neutral-200 bg-brand-50 p-3">
           <p className="flex items-center gap-2 text-sm font-semibold text-slate-700">
             <KeyRound className="size-4 text-brand-700" aria-hidden />
             Organization key verified
           </p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-muted">
             Your key was checked for {organization.name}. Signing in still requires your email and
             password — the key alone never grants access.
           </p>
@@ -67,7 +67,7 @@ export function EntryChoice() {
           <UserPlus className="mr-2 size-4" aria-hidden />
           Create Account
         </Button>
-        <p className="text-center text-xs text-slate-500">
+        <p className="text-center text-xs text-muted">
           {needsApproval
             ? 'New accounts are reviewed by an administrator before they can access farm data.'
             : 'New accounts join as a restricted member with the organization’s default role.'}

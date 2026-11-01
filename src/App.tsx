@@ -9,9 +9,13 @@ import { Analytics } from '@/pages/Analytics';
 import { Assistant } from '@/pages/Assistant';
 import { Dashboard } from '@/pages/Dashboard';
 import { DesignSystem } from '@/pages/DesignSystem';
+import { Chemicals } from '@/pages/Chemicals';
+import { Expenses } from '@/pages/Expenses';
+import { FarmCosts } from '@/pages/FarmCosts';
 import { Farms } from '@/pages/Farms';
 import { History } from '@/pages/History';
 import { Inventory } from '@/pages/Inventory';
+import { Labour } from '@/pages/Labour';
 import { MyTasks } from '@/pages/MyTasks';
 import { NotFound } from '@/pages/NotFound';
 import { Notifications } from '@/pages/Notifications';
@@ -165,6 +169,10 @@ export default function App() {
           <Route path="/farms" element={<Farms />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/workers" element={<Workers />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/chemicals" element={<Chemicals />} />
+          <Route path="/labour" element={<Labour />} />
+          <Route path="/farm-costs" element={<FarmCosts />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/weather" element={<Weather />} />
           <Route path="/assistant" element={<Assistant />} />

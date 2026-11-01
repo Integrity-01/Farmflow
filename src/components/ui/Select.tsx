@@ -18,19 +18,19 @@ export const SelectTrigger = forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      'flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-slate-900 shadow-sm transition-colors',
-      'hover:border-slate-400',
-      'focus-visible:border-brand-500',
-      'disabled:cursor-not-allowed disabled:opacity-60',
-      'aria-[invalid=true]:border-red-500',
-      'data-[placeholder]:text-slate-400',
+      'flex h-10 w-full items-center justify-between gap-2 rounded-[10px] border border-neutral-300 bg-white px-3.5 text-sm text-neutral-950 shadow-sm transition-colors',
+      'hover:border-neutral-400',
+      'focus-visible:border-brand-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/25',
+      'disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:opacity-60',
+      'aria-[invalid=true]:border-red-500 aria-[invalid=true]:focus-visible:ring-red-500/25',
+      'data-[placeholder]:text-neutral-400',
       className,
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="size-4 shrink-0 text-slate-400" aria-hidden />
+      <ChevronDown className="size-4 shrink-0 text-neutral-400" aria-hidden />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -46,14 +46,14 @@ export const SelectContent = forwardRef<
       ref={ref}
       position={position}
       className={cn(
-        'relative z-50 max-h-72 min-w-[8rem] overflow-hidden rounded-xl border border-slate-200 bg-white p-1 text-slate-900 shadow-popover',
+        'relative z-50 max-h-72 min-w-[8rem] overflow-hidden rounded-xl border border-neutral-200 bg-white p-1 text-neutral-950 shadow-popover',
         'data-[state=open]:animate-pop-in data-[state=closed]:animate-pop-out',
         position === 'popper' && 'translate-y-1',
         className,
       )}
       {...props}
     >
-      <SelectPrimitive.ScrollUpButton className="flex h-6 items-center justify-center text-slate-400">
+      <SelectPrimitive.ScrollUpButton className="flex h-6 items-center justify-center text-neutral-400">
         <ChevronUp className="size-4" />
       </SelectPrimitive.ScrollUpButton>
       <SelectPrimitive.Viewport
@@ -65,7 +65,7 @@ export const SelectContent = forwardRef<
       >
         {children}
       </SelectPrimitive.Viewport>
-      <SelectPrimitive.ScrollDownButton className="flex h-6 items-center justify-center text-slate-400">
+      <SelectPrimitive.ScrollDownButton className="flex h-6 items-center justify-center text-neutral-400">
         <ChevronDown className="size-4" />
       </SelectPrimitive.ScrollDownButton>
     </SelectPrimitive.Content>
@@ -82,7 +82,7 @@ export const SelectItem = forwardRef<
     ref={ref}
     className={cn(
       'relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-8 pr-3 text-sm outline-none',
-      'focus:bg-brand-50 focus:text-brand-900',
+      'focus:bg-brand-50 focus:text-brand-700',
       'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className,
     )}
@@ -105,7 +105,7 @@ export const SelectSeparator = forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn('-mx-1 my-1 h-px bg-slate-200', className)}
+    className={cn('-mx-1 my-1 h-px bg-neutral-200', className)}
     {...props}
   />
 ));

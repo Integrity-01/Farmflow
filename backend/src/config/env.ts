@@ -19,14 +19,20 @@ const envSchema = z.object({
   DB_USER: z.string().default('root'),
   DB_PASSWORD: z.string().default(''),
   DB_NAME: z.string().default('farmflow'),
-  // Managed MySQL providers (Aiven, PlanetScale, RDS...) require TLS. Set
-  // DB_SSL=true and optionally paste the provider CA into DB_SSL_CA (PEM text;
-  // literal "\n" sequences are accepted). When no CA is supplied, set
-  // DB_SSL_REJECT_UNAUTHORIZED=false to connect without verifying the chain.
+  // Managed MySQL providers (Aiven, PlanetScale, RDS...) require TLS. TLS is
+  // forced on for any non-local database; set DB_SSL=false to explicitly
+  // disable it (e.g. a local server without TLS). Optionally paste the
+  // provider CA into DB_SSL_CA (PEM text; literal "\n" sequences are
+  // accepted); when no CA is supplied, set DB_SSL_REJECT_UNAUTHORIZED=false to
+  // connect without verifying the chain.
   DB_SSL: z
     .string()
     .optional()
-    .transform((value) => value === 'true' || value === '1'),
+    .transform((value) =>
+      value === undefined || value === ''
+        ? undefined
+        : value === 'true' || value === '1',
+    ),
   DB_SSL_CA: z.string().optional(),
   DB_SSL_REJECT_UNAUTHORIZED: z
     .string()

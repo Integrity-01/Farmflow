@@ -23,8 +23,8 @@ export const RadioGroupItem = forwardRef<
   <RadioGroupPrimitive.Item
     ref={ref}
     className={cn(
-      'aspect-square size-5 rounded-full border border-slate-300 bg-white text-brand-600 transition-colors',
-      'hover:border-slate-400',
+      'aspect-square size-5 rounded-full border border-neutral-300 bg-white text-brand-600 transition-colors',
+      'hover:border-neutral-400',
       'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600',
       'disabled:cursor-not-allowed disabled:opacity-50',
       className,

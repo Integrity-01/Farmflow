@@ -114,9 +114,9 @@ function makeIcon(size, { maskable = false, round = true } = {}) {
       }
 
       const t = v / s;
-      const r = Math.round(lerp(0x22, 0x16, t));
-      const g = Math.round(lerp(0xc5, 0x80, t));
-      const b = Math.round(lerp(0x5e, 0x3d, t));
+      const r = Math.round(lerp(0x06, 0x06, t));
+      const g = Math.round(lerp(0x4b, 0x33, t));
+      const b = Math.round(lerp(0x08, 0x07, t));
 
       let inSymbol = false;
 
@@ -138,9 +138,9 @@ function makeIcon(size, { maskable = false, round = true } = {}) {
 
       const idx = (y * s + x) * 4;
       if (inSymbol) {
-        px[idx] = 0xf0;
-        px[idx + 1] = 0xfd;
-        px[idx + 2] = 0xf4;
+        px[idx] = 0xb8;
+        px[idx + 1] = 0xf0;
+        px[idx + 2] = 0x00;
       } else {
         px[idx] = r;
         px[idx + 1] = g;

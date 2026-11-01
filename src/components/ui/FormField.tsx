@@ -23,7 +23,7 @@ export function FormField({ id, label, required, error, hint, children }: FormFi
           {error}
         </p>
       ) : hint ? (
-        <p className="text-xs text-slate-500">{hint}</p>
+        <p className="text-xs text-muted">{hint}</p>
       ) : null}
     </div>
   );

@@ -5,37 +5,130 @@
     "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
-  --color-brand-50: #f0fdf4;
-  --color-brand-100: #dcfce7;
-  --color-brand-200: #bbf7d0;
-  --color-brand-300: #86efac;
-  --color-brand-400: #4ade80;
-  --color-brand-500: #22c55e;
-  --color-brand-600: #16a34a;
-  --color-brand-700: #15803d;
-  --color-brand-800: #166534;
-  --color-brand-900: #14532d;
-  --color-brand-950: #052e16;
+  /* FarmFlow brand greens */
+  --color-brand-50: #f4f9ef;
+  --color-brand-100: #e8f4e3;
+  --color-brand-200: #cde8c7;
+  --color-brand-300: #9bd098;
+  --color-brand-400: #54ad54;
+  --color-brand-500: #329344;
+  --color-brand-600: #064b08; /* primary deep green */
+  --color-brand-700: #063307; /* primary hover / dark green text */
+  --color-brand-800: #052a06;
+  --color-brand-900: #032004;
+  --color-brand-950: #021702;
 
-  /* FarmFlow agriculture palette (drawing direction reference) */
-  --color-forest-50: #eef5f0;
-  --color-forest-100: #d7e8dd;
-  --color-forest-600: #226b41;
-  --color-forest-700: #1c5638;
-  --color-forest-800: #16432c;
-  --color-forest-900: #123d2a;
-  --color-forest-950: #0b2a1c;
+  /* FarmFlow forest scale (sidebar and strong anchors) */
+  --color-forest-50: #f4f9ef;
+  --color-forest-100: #e8f4e3;
+  --color-forest-200: #cde8c7;
+  --color-forest-300: #54ad54;
+  --color-forest-400: #329344;
+  --color-forest-500: #1f7a2a;
+  --color-forest-600: #12621a;
+  --color-forest-700: #0d5712;
+  --color-forest-800: #064b08;
+  --color-forest-900: #064b08;
+  --color-forest-950: #063307;
 
-  --color-accent-200: #e2fbc4;
-  --color-accent-300: #c8f79a;
-  --color-accent-400: #a8f05a; /* primary lime */
-  --color-accent-500: #8fdc3f; /* lime hover */
-  --color-accent-600: #6fb52a;
+  /* FarmFlow lime accents */
+  --color-accent-50: #f8fde7;
+  --color-accent-100: #effabf;
+  --color-accent-200: #effabf;
+  --color-accent-300: #d5f77a;
+  --color-accent-400: #b8f000; /* primary lime */
+  --color-accent-500: #93bd00; /* lime hover */
+  --color-accent-600: #799e00;
+  --color-accent-700: #5f7c00;
 
-  --color-ink: #193326; /* primary text */
-  --color-muted: #66766b; /* secondary text */
-  --color-hairline: #dfe9de; /* borders */
-  --color-pale: #f2f8ec; /* pale green background */
+  /* FarmFlow orange accents */
+  --color-orange-50: #fff4ef;
+  --color-orange-100: #ffe4d9;
+  --color-orange-200: #ffc1ac;
+  --color-orange-300: #ffa384;
+  --color-orange-400: #ff825a;
+  --color-orange-500: #f9683c;
+  --color-orange-600: #f45124; /* primary brand orange */
+  --color-orange-700: #d94520;
+  --color-orange-800: #c43b19;
+  --color-orange-900: #a92c10;
+
+  /* FarmFlow cream surfaces */
+  --color-cream-50: #fffdf4;
+  --color-cream-100: #fffdf4; /* warm workspace background */
+  --color-cream-200: #fffbe8;
+  --color-cream-300: #fffbe8;
+  --color-cream-400: #fffadc;
+  --color-cream-500: #fff9d6; /* main brand cream */
+
+  /* FarmFlow neutrals */
+  --color-neutral-50: #f7f8f5;
+  --color-neutral-100: #f2f4ee;
+  --color-neutral-200: #e7ebe3;
+  --color-neutral-300: #d5dcd2;
+  --color-neutral-400: #a3aca0;
+  --color-neutral-500: #87908a;
+  --color-neutral-600: #687168;
+  --color-neutral-700: #4c564c;
+  --color-neutral-800: #374137;
+  --color-neutral-900: #2b332b;
+  --color-neutral-950: #20271f;
+
+  --color-ink: #20271f; /* primary text */
+  --color-muted: #687168; /* secondary text */
+  --color-hairline: #e7ebe3; /* borders and dividers */
+  --color-pale: #fffdf4; /* warm workspace background */
+
+  /* Keep legacy slate classes aligned with the warm neutral scale so existing
+     screens inherit the FarmFlow palette without a mechanical class rename. */
+  --color-slate-50: #f7f8f5;
+  --color-slate-100: #f2f4ee;
+  --color-slate-200: #e7ebe3;
+  --color-slate-300: #d5dcd2;
+  --color-slate-400: #a3aca0;
+  --color-slate-500: #87908a;
+  --color-slate-600: #687168;
+  --color-slate-700: #4c564c;
+  --color-slate-800: #374137;
+  --color-slate-900: #20271f;
+  --color-slate-950: #171d17;
+
+  /* Semantic aliases: legacy emerald/sky read as FarmFlow green, amber as orange. */
+  --color-emerald-50: #f4f9ef;
+  --color-emerald-100: #e8f4e3;
+  --color-emerald-200: #cde8c7;
+  --color-emerald-300: #9bd098;
+  --color-emerald-400: #54ad54;
+  --color-emerald-500: #329344;
+  --color-emerald-600: #1f7a2a;
+  --color-emerald-700: #12621a;
+  --color-emerald-800: #064b08;
+  --color-emerald-900: #063307;
+  --color-emerald-950: #021702;
+
+  --color-sky-50: #f4f9ef;
+  --color-sky-100: #e8f4e3;
+  --color-sky-200: #cde8c7;
+  --color-sky-300: #9bd098;
+  --color-sky-400: #54ad54;
+  --color-sky-500: #329344;
+  --color-sky-600: #1f7a2a;
+  --color-sky-700: #12621a;
+  --color-sky-800: #064b08;
+  --color-sky-900: #063307;
+  --color-sky-950: #021702;
+
+  --color-amber-50: #fff4ef;
+  --color-amber-100: #ffe4d9;
+  --color-amber-200: #ffc1ac;
+  --color-amber-300: #ffa384;
+  --color-amber-400: #ff825a;
+  --color-amber-500: #f9683c;
+  --color-amber-600: #f45124;
+  --color-amber-700: #d94520;
+  --color-amber-800: #c43b19;
+  --color-amber-900: #a92c10;
+  --color-amber-950: #7a1f0b;
 
   --radius-xs: 0.375rem;
   --radius-sm: 0.5rem;
@@ -44,12 +137,12 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.25rem;
 
-  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
-  --shadow-popover: 0 4px 6px -1px rgb(15 23 42 / 0.08), 0 12px 24px -4px rgb(15 23 42 / 0.1);
-  --shadow-modal: 0 10px 15px -3px rgb(15 23 42 / 0.1), 0 25px 50px -12px rgb(15 23 42 / 0.25);
-  --shadow-soft: 0 1px 2px rgb(25 70 38 / 0.05), 0 8px 24px -8px rgb(25 70 38 / 0.12);
-  --shadow-glass: 0 12px 32px rgb(25 70 38 / 0.08);
-  --shadow-lift: 0 16px 40px -12px rgb(25 70 38 / 0.22);
+  --shadow-card: 0 1px 2px rgb(32 39 31 / 0.04), 0 1px 3px rgb(32 39 31 / 0.06);
+  --shadow-popover: 0 4px 6px -1px rgb(32 39 31 / 0.08), 0 12px 24px -4px rgb(32 39 31 / 0.1);
+  --shadow-modal: 0 10px 15px -3px rgb(32 39 31 / 0.1), 0 25px 50px -12px rgb(32 39 31 / 0.25);
+  --shadow-soft: 0 1px 2px rgb(6 75 8 / 0.04), 0 8px 24px -12px rgb(6 75 8 / 0.12);
+  --shadow-glass: 0 12px 32px rgb(6 75 8 / 0.08);
+  --shadow-lift: 0 16px 40px -12px rgb(6 75 8 / 0.2);
 
   --animate-fade-in: fade-in 150ms ease-out;
   --animate-fade-out: fade-out 120ms ease-in forwards;
@@ -127,7 +220,7 @@
 
   body {
     background-color: var(--color-pale);
-    @apply font-sans text-slate-900 antialiased;
+    @apply font-sans text-neutral-950 antialiased;
   }
 
   :focus-visible {
@@ -135,7 +228,7 @@
   }
 
   ::selection {
-    @apply bg-accent-300 text-forest-900;
+    @apply bg-accent-400 text-forest-950;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -173,7 +266,7 @@
   }
 
   .glass-surface {
-    background-color: rgb(255 255 255 / 0.76);
+    background-color: rgb(255 253 244 / 0.78);
     border: 1px solid rgb(255 255 255 / 0.48);
     box-shadow: var(--shadow-glass);
     backdrop-filter: blur(18px) saturate(140%);
@@ -182,14 +275,14 @@
 
   .glass-panel {
     background-color: rgb(255 255 255 / 0.9);
-    border: 1px solid rgb(255 255 255 / 0.6);
+    border: 1px solid rgb(231 235 227 / 0.9);
     box-shadow: var(--shadow-soft);
     backdrop-filter: blur(22px) saturate(150%);
     -webkit-backdrop-filter: blur(22px) saturate(150%);
   }
 
   .glass-dark {
-    background-color: rgb(9 32 22 / 0.42);
+    background-color: rgb(6 51 7 / 0.46);
     border: 1px solid rgb(255 255 255 / 0.2);
     box-shadow: var(--shadow-glass);
     backdrop-filter: blur(16px) saturate(130%);
@@ -198,13 +291,13 @@
 
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .glass-surface {
-      background-color: rgb(255 255 255 / 0.96);
+      background-color: rgb(255 253 244 / 0.97);
     }
     .glass-panel {
       background-color: rgb(255 255 255 / 0.98);
     }
     .glass-dark {
-      background-color: rgb(9 32 22 / 0.82);
+      background-color: rgb(6 51 7 / 0.86);
     }
   }
 }

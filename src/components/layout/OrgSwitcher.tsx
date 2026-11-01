@@ -52,7 +52,7 @@ export function OrgSwitcher() {
         <button
           type="button"
           disabled={switching}
-          className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-1.5 text-sm shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+          className="flex items-center gap-2 rounded-[10px] border border-neutral-200 bg-white px-2.5 py-1.5 text-sm shadow-sm transition-colors hover:bg-brand-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
         >
           <Building2 className="size-4 text-slate-500" aria-hidden />
           <span className="max-w-[160px] truncate font-medium text-slate-700">

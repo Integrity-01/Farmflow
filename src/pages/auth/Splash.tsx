@@ -40,7 +40,7 @@ export function Splash() {
       <div className="relative z-10 flex flex-1 flex-col">
         <header className="safe-area-top flex h-16 items-center px-5 sm:px-8">
           <Link to="/" className="flex items-center gap-2 text-white">
-            <span className="flex size-9 items-center justify-center rounded-xl bg-accent-400 text-forest-900 shadow-soft">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-accent-400 text-brand-600 shadow-soft">
               <Sprout className="size-5" aria-hidden />
             </span>
             <span className="text-lg font-bold tracking-tight">FarmFlow</span>
@@ -102,7 +102,7 @@ export function Splash() {
             style={{ animationDelay: '260ms' }}
           >
             <div className="glass-dark rounded-3xl p-6 sm:p-8">
-              <div className="flex size-12 items-center justify-center rounded-2xl bg-accent-400 text-forest-900">
+              <div className="flex size-12 items-center justify-center rounded-2xl bg-accent-400 text-brand-600">
                 <Sprout className="size-6" aria-hidden />
               </div>
               <h2 className="mt-5 text-2xl font-bold tracking-tight text-white">

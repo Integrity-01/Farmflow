@@ -94,6 +94,21 @@ const brandSwatches = [
   ['950', 'bg-brand-950'],
 ] as const;
 
+const accentSwatches = [
+  ['lime-100', 'bg-accent-100'],
+  ['lime-300', 'bg-accent-300'],
+  ['lime-500', 'bg-accent-400'],
+  ['lime-600', 'bg-accent-500'],
+  ['orange-100', 'bg-orange-100'],
+  ['orange-200', 'bg-orange-200'],
+  ['orange-600', 'bg-orange-600'],
+  ['orange-800', 'bg-orange-800'],
+  ['cream-500', 'bg-cream-500'],
+  ['cream-100', 'bg-cream-100'],
+  ['neutral-300', 'bg-neutral-300'],
+  ['neutral-950', 'bg-neutral-950'],
+] as const;
+
 const statusSwatches = [
   ['success', 'bg-brand-500'],
   ['info', 'bg-sky-500'],
@@ -154,8 +169,8 @@ export function DesignSystem() {
   return (
     <div className="space-y-6">
       <section>
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Design System</h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <h2 className="text-2xl font-bold tracking-tight text-brand-700">Design System</h2>
+        <p className="mt-1 text-sm text-muted">
           The reusable FarmFlow component library. Every page is built from these pieces.
         </p>
       </section>
@@ -165,7 +180,15 @@ export function DesignSystem() {
           {brandSwatches.map(([name, bg]) => (
             <div key={name} className="flex flex-col items-center gap-1">
               <div className={`size-14 rounded-xl ${bg}`} />
-              <span className="text-xs text-slate-500">brand-{name}</span>
+              <span className="text-xs text-muted">brand-{name}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {accentSwatches.map(([name, bg]) => (
+            <div key={name} className="flex flex-col items-center gap-1">
+              <div className={`size-14 rounded-xl border border-neutral-200 ${bg}`} />
+              <span className="text-xs text-muted">{name}</span>
             </div>
           ))}
         </div>
@@ -188,9 +211,11 @@ export function DesignSystem() {
       <Section title="Buttons">
         <Row label="Variants">
           <Button variant="primary">Create Task</Button>
+          <Button variant="lime">Lime action</Button>
           <Button variant="secondary">Secondary</Button>
           <Button variant="outline">Outline</Button>
           <Button variant="ghost">Ghost</Button>
+          <Button variant="orange">Attention</Button>
           <Button variant="danger">Delete</Button>
         </Row>
         <Row label="Sizes & loading">
@@ -293,10 +318,13 @@ export function DesignSystem() {
       <Section title="Badges & progress">
         <Row label="Badges">
           <Badge variant="default">To Do</Badge>
+          <Badge variant="lime">In Progress</Badge>
           <Badge variant="info">In Progress</Badge>
           <Badge variant="success">Finished</Badge>
           <Badge variant="warning">Due Soon</Badge>
+          <Badge variant="orange">Awaiting Payment</Badge>
           <Badge variant="danger">Overdue</Badge>
+          <Badge variant="neutral">Draft</Badge>
           <Badge variant="outline">Critical</Badge>
         </Row>
         <div className="flex items-center gap-3">

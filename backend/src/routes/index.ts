@@ -16,6 +16,10 @@ import workerRoutes from './worker.routes.js';
 import weatherRoutes from './weather.routes.js';
 import orgRouter from './organization.routes.js';
 import systemRouter from './system.routes.js';
+import expenseRoutes from './expense.routes.js';
+import chemicalRoutes from './chemical.routes.js';
+import labourRoutes from './labour.routes.js';
+import financialRoutes from './financial.routes.js';
 
 const router = Router();
 
@@ -45,5 +49,9 @@ router.use('/organizations', orgRouter);
 router.use('/ai', aiRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/system', systemRouter);
+router.use('/expenses', expenseRoutes);
+router.use('/chemicals', chemicalRoutes);
+router.use('/labour', labourRoutes);
+router.use('/financial', financialRoutes);
 
 export default router;

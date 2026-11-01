@@ -52,7 +52,7 @@ function statusBadge(status: TaskStatus): NonNullable<import('@/components/ui/Ba
     case 'todo':
       return 'default';
     case 'in_progress':
-      return 'info';
+      return 'lime';
     case 'finished':
       return 'success';
   }
@@ -463,7 +463,7 @@ export function TaskDetailDialog({ open, onOpenChange, taskId }: TaskDetailDialo
 
               <form onSubmit={handleCommentSubmit} className="mt-3 flex gap-2">
                 <input
-                  className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="min-w-0 flex-1 rounded-[10px] border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-950 placeholder:text-neutral-400 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/25"
                   placeholder="Add a comment…"
                   value={comment}
                   onChange={(event) => {

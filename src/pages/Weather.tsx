@@ -64,7 +64,7 @@ export function Weather() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900">Weather</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-brand-700">Weather</h2>
           <p className="mt-0.5 text-sm text-slate-500">
             Current conditions and a 7-day outlook for your farms
           </p>

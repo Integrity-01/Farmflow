@@ -6,7 +6,7 @@ export const Separator = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElemen
     <div
       ref={ref}
       role="separator"
-      className={cn('h-px w-full shrink-0 bg-slate-200', className)}
+      className={cn('h-px w-full shrink-0 bg-neutral-200', className)}
       {...props}
     />
   ),

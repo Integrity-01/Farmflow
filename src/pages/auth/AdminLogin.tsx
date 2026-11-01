@@ -94,7 +94,7 @@ export function AdminLogin() {
             <button
               type="button"
               onClick={() => setShowPassword((value) => !value)}
-              className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-slate-400 hover:text-slate-600"
+              className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-neutral-400 hover:text-neutral-700"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? (
@@ -106,7 +106,7 @@ export function AdminLogin() {
           </div>
         </FormField>
 
-        <p className="flex items-start gap-2 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+        <p className="flex items-start gap-2 rounded-xl bg-brand-50 p-3 text-xs leading-5 text-muted">
           <ShieldCheck className="mt-0.5 size-4 shrink-0 text-brand-700" aria-hidden />
           Your Admin ID is a private login identifier — never share it or your password with anyone.
         </p>
@@ -114,7 +114,7 @@ export function AdminLogin() {
         <div className="flex items-center justify-between">
           <Link
             to="/login/welcome"
-            className="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-700"
+            className="inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-neutral-900"
           >
             <ArrowLeft className="size-3.5" aria-hidden />
             Back

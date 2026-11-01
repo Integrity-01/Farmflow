@@ -26,7 +26,7 @@ export const DrawerContent = forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        'fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-lg rounded-t-2xl border border-b-0 border-slate-200 bg-white p-5 shadow-modal',
+        'fixed inset-x-0 bottom-0 z-50 mx-auto w-full max-w-lg rounded-t-2xl border border-b-0 border-neutral-200 bg-white p-5 shadow-modal',
         'data-[state=open]:animate-slide-in-from-bottom data-[state=closed]:translate-y-full',
         'transition-transform duration-200 ease-out',
         'max-h-[85dvh] overflow-y-auto',
@@ -34,10 +34,10 @@ export const DrawerContent = forwardRef<
       )}
       {...props}
     >
-      <div className="mx-auto mb-4 h-1.5 w-10 shrink-0 rounded-full bg-slate-200" aria-hidden />
+      <div className="mx-auto mb-4 h-1.5 w-10 shrink-0 rounded-full bg-neutral-200" aria-hidden />
       <DialogPrimitive.Close
         aria-label="Close"
-        className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+        className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-lg text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
       >
         <X className="size-4" aria-hidden />
       </DialogPrimitive.Close>
