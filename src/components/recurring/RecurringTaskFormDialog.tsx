@@ -19,7 +19,6 @@ import { ApiError } from '@/services/api';
 import { farmsApi } from '@/services/farms';
 import { recurringTasksApi } from '@/services/recurringTasks';
 import { tasksApi } from '@/services/tasks';
-import { workersApi } from '@/services/workers';
 import { useToastStore } from '@/store/toast.store';
 import { cn } from '@/utils/cn';
 import type { RecurringFrequency, RecurringTask, RecurringTaskDraft, TaskPriority } from '@/types';
@@ -112,13 +111,10 @@ export function RecurringTaskFormDialog({ open, onOpenChange, rule }: RecurringT
     enabled: open && farmId !== NO_SELECTION,
   });
 
-  const workersQuery = useQuery({
-    queryKey: ['workers', 'recurring-form', farmId],
-    queryFn: async () => {
-      if (farmId === NO_SELECTION) return { items: [] };
-      return workersApi.list({ farmId, status: 'active', pageSize: 100 });
-    },
-    enabled: open && farmId !== NO_SELECTION,
+  const assigneesQuery = useQuery({
+    queryKey: ['tasks', 'assignees'],
+    queryFn: tasksApi.assignees,
+    enabled: open,
   });
 
   const categoriesQuery = useQuery({
@@ -130,7 +126,6 @@ export function RecurringTaskFormDialog({ open, onOpenChange, rule }: RecurringT
   function handleFarmChange(value: string) {
     setFarmId(value);
     setFieldId(NO_SELECTION);
-    setAssignedTo(NO_SELECTION);
   }
 
   function toggleWeekday(day: number) {
@@ -216,8 +211,10 @@ export function RecurringTaskFormDialog({ open, onOpenChange, rule }: RecurringT
 
   const farms = farmsQuery.data?.items ?? [];
   const fields = fieldsQuery.data ?? [];
-  const workers = workersQuery.data?.items ?? [];
+  const assignees = assigneesQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
+  const currentAssigneeMissing =
+    Boolean(rule?.assignedTo) && !assignees.some((assignee) => assignee.id === rule!.assignedTo);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -318,19 +315,24 @@ export function RecurringTaskFormDialog({ open, onOpenChange, rule }: RecurringT
             </FormField>
           </div>
 
-          <FormField id="recurring-assignee" label="Assign to" hint="Active workers on the chosen farm.">
-            <Select value={assignedTo} onValueChange={setAssignedTo} disabled={farmId === NO_SELECTION}>
+          <FormField id="recurring-assignee" label="Assign to" hint="Field officers in your organization.">
+            <Select value={assignedTo} onValueChange={setAssignedTo}>
               <SelectTrigger id="recurring-assignee">
-                <SelectValue placeholder={farmId === NO_SELECTION ? 'Choose a farm first' : 'Unassigned'} />
+                <SelectValue placeholder="Unassigned" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={NO_SELECTION}>Unassigned</SelectItem>
-                {workers.map((worker) => (
-                  <SelectItem key={worker.id} value={worker.id}>
-                    {worker.name}
-                    {worker.position ? ` — ${worker.position}` : ''}
+                {assignees.map((assignee) => (
+                  <SelectItem key={assignee.id} value={assignee.id}>
+                    {assignee.name}
+                    {assignee.email ? ` — ${assignee.email}` : ''}
                   </SelectItem>
                 ))}
+                {currentAssigneeMissing ? (
+                  <SelectItem value={rule!.assignedTo!}>
+                    {rule!.assigneeName ?? 'Current assignee'}
+                  </SelectItem>
+                ) : null}
               </SelectContent>
             </Select>
           </FormField>

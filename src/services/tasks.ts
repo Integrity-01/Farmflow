@@ -3,6 +3,7 @@ import { offlineGuard } from '@/pwa/syncQueue';
 import type {
   PagedTasks,
   Task,
+  TaskAssignee,
   TaskAttachment,
   TaskCategory,
   TaskComment,
@@ -53,6 +54,11 @@ export const tasksApi = {
 
   async categories(): Promise<TaskCategory[]> {
     const result = await api.get<{ data: TaskCategory[] }>('/categories');
+    return result.data;
+  },
+
+  async assignees(): Promise<TaskAssignee[]> {
+    const result = await api.get<{ data: TaskAssignee[] }>('/tasks/assignees');
     return result.data;
   },
 

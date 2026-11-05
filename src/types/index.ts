@@ -379,6 +379,14 @@ export interface TaskCategory {
   isSystem: boolean;
 }
 
+export interface TaskAssignee {
+  id: string;
+  userId: string;
+  name: string;
+  email: string | null;
+  role: string;
+}
+
 export interface Task {
   id: string;
   title: string;

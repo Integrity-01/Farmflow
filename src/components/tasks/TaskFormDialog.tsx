@@ -18,7 +18,6 @@ import { ApiError } from '@/services/api';
 import { isQueuedError } from '@/pwa/syncQueue';
 import { farmsApi } from '@/services/farms';
 import { tasksApi } from '@/services/tasks';
-import { workersApi } from '@/services/workers';
 import { useToastStore } from '@/store/toast.store';
 import type { Task, TaskDraft, TaskPriority, TaskStatus } from '@/types';
 
@@ -119,13 +118,10 @@ export function TaskFormDialog({
     enabled: open && farmId !== NO_SELECTION,
   });
 
-  const workersQuery = useQuery({
-    queryKey: ['workers', 'task-form', farmId],
-    queryFn: async () => {
-      if (farmId === NO_SELECTION) return { items: [] };
-      return workersApi.list({ farmId, status: 'active', pageSize: 100 });
-    },
-    enabled: open && farmId !== NO_SELECTION,
+  const assigneesQuery = useQuery({
+    queryKey: ['tasks', 'assignees'],
+    queryFn: tasksApi.assignees,
+    enabled: open,
   });
 
   const categoriesQuery = useQuery({
@@ -137,7 +133,6 @@ export function TaskFormDialog({
   function handleFarmChange(value: string) {
     setFarmId(value);
     setFieldId(NO_SELECTION);
-    setAssignedTo(NO_SELECTION);
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -210,8 +205,10 @@ export function TaskFormDialog({
 
   const farms = farmsQuery.data?.items ?? [];
   const fields = fieldsQuery.data ?? [];
-  const workers = workersQuery.data?.items ?? [];
+  const assignees = assigneesQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
+  const currentAssigneeMissing =
+    Boolean(task?.assignedTo) && !assignees.some((assignee) => assignee.id === task!.assignedTo);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -312,19 +309,24 @@ export function TaskFormDialog({
             </FormField>
           </div>
 
-          <FormField id="task-assignee" label="Assign to" hint="Active workers on the chosen farm.">
-            <Select value={assignedTo} onValueChange={setAssignedTo} disabled={farmId === NO_SELECTION}>
+          <FormField id="task-assignee" label="Assign to" hint="Field officers in your organization.">
+            <Select value={assignedTo} onValueChange={setAssignedTo}>
               <SelectTrigger id="task-assignee">
-                <SelectValue placeholder={farmId === NO_SELECTION ? 'Choose a farm first' : 'Unassigned'} />
+                <SelectValue placeholder="Unassigned" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={NO_SELECTION}>Unassigned</SelectItem>
-                {workers.map((worker) => (
-                  <SelectItem key={worker.id} value={worker.id}>
-                    {worker.name}
-                    {worker.position ? ` — ${worker.position}` : ''}
+                {assignees.map((assignee) => (
+                  <SelectItem key={assignee.id} value={assignee.id}>
+                    {assignee.name}
+                    {assignee.email ? ` — ${assignee.email}` : ''}
                   </SelectItem>
                 ))}
+                {currentAssigneeMissing ? (
+                  <SelectItem value={task!.assignedTo!}>
+                    {task!.assigneeName ?? 'Current assignee'}
+                  </SelectItem>
+                ) : null}
               </SelectContent>
             </Select>
           </FormField>

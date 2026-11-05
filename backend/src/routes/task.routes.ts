@@ -9,6 +9,7 @@ import {
   deleteAttachment,
   deleteTask,
   getTask,
+  listAssignees,
   listCategories,
   listTasks,
   startTask,
@@ -41,6 +42,7 @@ categoryRouter.get('/', listCategories);
 taskRouter.use(requireAuth());
 taskRouter.get('/', validate(listTasksQuerySchema, 'query'), listTasks);
 taskRouter.post('/', requireRole('supervisor'), validate(createTaskSchema), createTask);
+taskRouter.get('/assignees', requireRole('supervisor'), listAssignees);
 taskRouter.delete('/attachments/:id', deleteAttachment);
 taskRouter.get('/:id', getTask);
 taskRouter.patch('/:id', requireRole('supervisor'), validate(updateTaskSchema), updateTask);

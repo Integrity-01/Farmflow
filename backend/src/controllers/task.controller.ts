@@ -45,6 +45,15 @@ export async function listCategories(_req: Request, res: Response, next: NextFun
   }
 }
 
+export async function listAssignees(req: Request, res: Response, next: NextFunction) {
+  try {
+    const assignees = await taskService.assignees(req.auth!.user);
+    res.json({ status: 'success', data: assignees });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function createTask(req: Request, res: Response, next: NextFunction) {
   try {
     const task = await taskService.create(req.auth!.user, req.body);
