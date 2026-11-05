@@ -92,30 +92,35 @@ export const systemAuthApi = {
   },
 };
 
-let refreshing: Promise<boolean> | null = null;
+let refreshing: Promise<SystemSession> | null = null;
+
+/**
+ * Refresh tokens are single-use, so share one in-flight refresh between the
+ * boot call and any 401 retry instead of rotating the cookie twice.
+ */
+function refreshOnce(): Promise<SystemSession> {
+  if (!refreshing) {
+    refreshing = systemAuthApi.refresh().finally(() => {
+      refreshing = null;
+    });
+  }
+  return refreshing;
+}
 
 export function configureSystemAuthHooks(): void {
   configureSystemApiAuth({
     getAccessToken: () => useSystemAdminStore.getState().accessToken,
-    refreshSession: () => {
-      if (!refreshing) {
-        refreshing = systemAuthApi
-          .refresh()
-          .then((session) => {
-            useSystemAdminStore.getState().setSession(session.user, session.accessToken);
-            return true;
-          })
-          .catch((error) => {
-            if (!isTemporaryFailure(error)) {
-              useSystemAdminStore.getState().clearSession();
-            }
-            return false;
-          })
-          .finally(() => {
-            refreshing = null;
-          });
+    refreshSession: async () => {
+      try {
+        const session = await refreshOnce();
+        useSystemAdminStore.getState().setSession(session.user, session.accessToken);
+        return true;
+      } catch (error) {
+        if (!isTemporaryFailure(error)) {
+          useSystemAdminStore.getState().clearSession();
+        }
+        return false;
       }
-      return refreshing;
     },
   });
 }
@@ -124,7 +129,7 @@ export async function bootstrapSystemAuth(): Promise<void> {
   configureSystemAuthHooks();
   const store = useSystemAdminStore.getState();
   try {
-    const session = await systemAuthApi.refresh();
+    const session = await refreshOnce();
     store.setSession(session.user, session.accessToken);
   } catch (error) {
     const keepPersisted = isTemporaryFailure(error) && store.status === 'authenticated';

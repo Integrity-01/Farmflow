@@ -106,30 +106,37 @@ export const authApi = {
   },
 };
 
-let refreshing: Promise<boolean> | null = null;
+let refreshing: Promise<AuthSession> | null = null;
+
+/**
+ * Refresh tokens are single-use: a second refresh with the same cookie is
+ * rejected, and a rejection clears the session. Share one in-flight request
+ * so concurrent callers (a 401 retry racing the boot refresh, or React
+ * StrictMode mounting the app twice) can never rotate the token twice.
+ */
+function refreshOnce(): Promise<AuthSession> {
+  if (!refreshing) {
+    refreshing = authApi.refresh().finally(() => {
+      refreshing = null;
+    });
+  }
+  return refreshing;
+}
 
 export function configureAuthHooks(): void {
   configureApiAuth({
     getAccessToken: () => useAuthStore.getState().accessToken,
-    refreshSession: () => {
-      if (!refreshing) {
-        refreshing = authApi
-          .refresh()
-          .then((session) => {
-            useAuthStore.getState().setSession(session.user, session.accessToken);
-            return true;
-          })
-          .catch((error) => {
-            if (!isTemporaryRefreshFailure(error)) {
-              useAuthStore.getState().clearSession();
-            }
-            return false;
-          })
-          .finally(() => {
-            refreshing = null;
-          });
+    refreshSession: async () => {
+      try {
+        const session = await refreshOnce();
+        useAuthStore.getState().setSession(session.user, session.accessToken);
+        return true;
+      } catch (error) {
+        if (!isTemporaryRefreshFailure(error)) {
+          useAuthStore.getState().clearSession();
+        }
+        return false;
       }
-      return refreshing;
     },
   });
 }
@@ -138,7 +145,7 @@ export async function bootstrapAuth(): Promise<void> {
   configureAuthHooks();
   const store = useAuthStore.getState();
   try {
-    const session = await authApi.refresh();
+    const session = await refreshOnce();
     store.setSession(session.user, session.accessToken);
   } catch (error) {
     // Offline reload: keep the persisted session so the app shell and cached
