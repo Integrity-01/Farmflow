@@ -122,6 +122,7 @@ export function TaskFormDialog({
     queryKey: ['tasks', 'assignees'],
     queryFn: tasksApi.assignees,
     enabled: open,
+    staleTime: 30_000,
   });
 
   const categoriesQuery = useQuery({

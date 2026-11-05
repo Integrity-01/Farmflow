@@ -1,6 +1,6 @@
 /* FarmFlow service worker */
 const CACHE_NAME = 'farmflow-v6';
-const API_CACHE_NAME = 'farmflow-api-v4';
+const API_CACHE_NAME = 'farmflow-api-v5';
 const OFFLINE_URL = '/offline.html';
 const API_TTL_MS = 45_000;
 const PRECACHE_URLS = [

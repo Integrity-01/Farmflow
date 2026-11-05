@@ -13,6 +13,7 @@ import { Chemicals } from '@/pages/Chemicals';
 import { Expenses } from '@/pages/Expenses';
 import { FarmCosts } from '@/pages/FarmCosts';
 import { Farms } from '@/pages/Farms';
+import { FieldOfficers } from '@/pages/FieldOfficers';
 import { History } from '@/pages/History';
 import { Inventory } from '@/pages/Inventory';
 import { Labour } from '@/pages/Labour';
@@ -26,7 +27,6 @@ import { Settings } from '@/pages/Settings';
 import { Tasks } from '@/pages/Tasks';
 import { Team } from '@/pages/Team';
 import { Weather } from '@/pages/Weather';
-import { Workers } from '@/pages/Workers';
 import { AcceptInvitation } from '@/pages/auth/AcceptInvitation';
 import { AdminLogin } from '@/pages/auth/AdminLogin';
 import { EntryChoice } from '@/pages/auth/EntryChoice';
@@ -168,7 +168,8 @@ export default function App() {
           <Route path="/recurring-tasks" element={<RecurringTasks />} />
           <Route path="/farms" element={<Farms />} />
           <Route path="/inventory" element={<Inventory />} />
-          <Route path="/workers" element={<Workers />} />
+          <Route path="/field-officers" element={<FieldOfficers />} />
+          <Route path="/workers" element={<Navigate to="/field-officers" replace />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/chemicals" element={<Chemicals />} />
           <Route path="/labour" element={<Labour />} />

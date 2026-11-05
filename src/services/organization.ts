@@ -1,4 +1,5 @@
 import { api } from '@/services/api';
+import { clearApiCache } from '@/pwa/cache';
 import type {
   AdminCredential,
   AuthUser,
@@ -36,6 +37,7 @@ export const organizationApi = {
 
   async switch(orgId: string): Promise<AuthUser> {
     const result = await api.post<{ user: AuthUser }>('/organizations/switch', { orgId });
+    await clearApiCache();
     return result.user;
   },
 
@@ -65,6 +67,7 @@ export const organizationApi = {
 
   async join(accessKey: string): Promise<OrgSummary[]> {
     const result = await api.post<{ orgs: OrgSummary[] }>('/organizations/join', { accessKey });
+    await clearApiCache();
     return result.orgs;
   },
 
@@ -140,6 +143,7 @@ export const organizationApi = {
     const result = await api.post<{ orgs: OrgSummary[] }>('/organizations/invitations/accept', {
       token,
     });
+    await clearApiCache();
     return result.orgs;
   },
 };

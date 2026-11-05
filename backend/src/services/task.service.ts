@@ -8,6 +8,7 @@ import { logger } from '../utils/logger.js';
 import { UPLOADS_DIR } from '../config/uploads.js';
 import { pushService } from './push.service.js';
 import { emailService } from './email.service.js';
+import { syncFieldOfficerWorkers } from './worker.service.js';
 
 export interface TaskItem {
   id: string;
@@ -484,52 +485,7 @@ export const taskService = {
   async assignees(actor: AuthUser): Promise<AssigneeItem[]> {
     const orgId = actor.currentOrg?.id;
     if (!orgId) return [];
-
-    const result = await pool.query<{
-      user_id: string;
-      name: string;
-      email: string | null;
-      phone: string | null;
-      worker_id: string | null;
-    }>(
-      `SELECT u.id AS user_id, u.name, u.email, u.phone,
-              (SELECT w.id FROM workers w
-                WHERE w.user_id = u.id
-                  AND w.organization_id = $1
-                  AND w.status = 'active'
-                ORDER BY w.created_at ASC
-                LIMIT 1) AS worker_id
-         FROM organization_memberships m
-         JOIN users u ON u.id = m.user_id
-         JOIN roles r ON r.id = m.role_id
-        WHERE m.organization_id = $1
-          AND m.status = 'active'
-          AND r.code = 'field_officer'
-          AND u.is_active = TRUE
-        ORDER BY u.name`,
-      [orgId],
-    );
-
-    const items: AssigneeItem[] = [];
-    for (const row of result.rows) {
-      let workerId = row.worker_id;
-      if (!workerId) {
-        workerId = uid();
-        await pool.query(
-          `INSERT INTO workers (id, user_id, name, phone, email, role, status, joined_at, organization_id)
-           VALUES ($1, $2, $3, $4, $5, 'field_officer', 'active', CURRENT_DATE, $6)`,
-          [workerId, row.user_id, row.name, row.phone, row.email, orgId],
-        );
-      }
-      items.push({
-        id: workerId,
-        userId: row.user_id,
-        name: row.name,
-        email: row.email,
-        role: 'field_officer',
-      });
-    }
-    return items;
+    return syncFieldOfficerWorkers(orgId);
   },
 
   async create(

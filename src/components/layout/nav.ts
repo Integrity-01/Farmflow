@@ -119,7 +119,7 @@ export const navGroups: NavGroup[] = [
         labels: { field_officer: 'My Farms', supervisor: 'My Farms' },
       },
       { to: '/inventory', label: 'Inventory', icon: Package, minRole: 'supervisor', permissions: ['inventory:view'] },
-      { to: '/workers', label: 'Workers', icon: Users, minRole: 'supervisor', permissions: ['worker:view'] },
+      { to: '/field-officers', label: 'Field Officers', icon: Users, minRole: 'supervisor', permissions: ['worker:view'] },
     ],
   },
   {

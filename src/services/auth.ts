@@ -1,4 +1,5 @@
 import { ApiError, api, configureApiAuth } from '@/services/api';
+import { clearApiCache } from '@/pwa/cache';
 import { useAuthStore } from '@/store/auth.store';
 import type { AuthSession, AuthUser } from '@/types';
 
@@ -58,28 +59,36 @@ export const authApi = {
     organizationId: string,
     accessKey: string,
   ): Promise<AuthSession> {
-    return api.post<AuthSession>('/auth/login', {
+    const session = await api.post<AuthSession>('/auth/login', {
       email,
       password,
       organizationId,
       accessKey,
     });
+    await clearApiCache();
+    return session;
   },
 
   async register(input: RegisterInput): Promise<AuthSession> {
-    return api.post<AuthSession>('/auth/register', input);
+    const session = await api.post<AuthSession>('/auth/register', input);
+    await clearApiCache();
+    return session;
   },
 
   async adminLogin(adminId: string, password: string): Promise<AuthSession> {
-    return api.post<AuthSession>('/auth/admin-login', { adminId, password });
+    const session = await api.post<AuthSession>('/auth/admin-login', { adminId, password });
+    await clearApiCache();
+    return session;
   },
 
   async createOrganization(input: CreateOrganizationInput): Promise<
     AuthSession & { accessKey: string; adminId: string; organization: OrganizationAccess }
   > {
-    return api.post<
+    const session = await api.post<
       AuthSession & { accessKey: string; adminId: string; organization: OrganizationAccess }
     >('/auth/organizations', input);
+    await clearApiCache();
+    return session;
   },
 
   async refresh(): Promise<AuthSession> {
@@ -92,7 +101,11 @@ export const authApi = {
   },
 
   async logout(): Promise<void> {
-    await api.post<void>('/auth/logout');
+    try {
+      await api.post<void>('/auth/logout');
+    } finally {
+      await clearApiCache();
+    }
   },
 
   async forgotPassword(email: string): Promise<{ message: string; devResetLink?: string }> {

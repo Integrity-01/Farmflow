@@ -146,6 +146,68 @@ async function canManagePlacement(
   return result.rows.length > 0;
 }
 
+export interface FieldOfficerWorker {
+  id: string;
+  userId: string;
+  name: string;
+  email: string | null;
+  role: string;
+}
+
+/**
+ * In FarmFlow a field officer is the organization's worker: tasks point at
+ * `workers.id`, so every active field officer needs a linked worker row.
+ * Returns the organization roster, creating missing worker rows as it goes.
+ * Used by task assignment and the Field Officers page so both stay in sync.
+ */
+export async function syncFieldOfficerWorkers(orgId: string): Promise<FieldOfficerWorker[]> {
+  const result = await pool.query<{
+    user_id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+    worker_id: string | null;
+  }>(
+    `SELECT u.id AS user_id, u.name, u.email, u.phone,
+            (SELECT w.id FROM workers w
+              WHERE w.user_id = u.id
+                AND w.organization_id = $1
+                AND w.status = 'active'
+              ORDER BY w.created_at ASC
+              LIMIT 1) AS worker_id
+       FROM organization_memberships m
+       JOIN users u ON u.id = m.user_id
+       JOIN roles r ON r.id = m.role_id
+      WHERE m.organization_id = $1
+        AND m.status = 'active'
+        AND r.code = 'field_officer'
+        AND u.is_active = TRUE
+      ORDER BY u.name`,
+    [orgId],
+  );
+
+  const items: FieldOfficerWorker[] = [];
+  for (const row of result.rows) {
+    let workerId = row.worker_id;
+    if (!workerId) {
+      workerId = uid();
+      await pool.query(
+        `INSERT INTO workers (id, user_id, name, phone, email, role, status, joined_at, organization_id)
+         VALUES ($1, $2, $3, $4, $5, 'field_officer', 'active', CURRENT_DATE, $6)`,
+        [workerId, row.user_id, row.name, row.phone, row.email, orgId],
+      );
+    }
+    items.push({
+      id: workerId,
+      userId: row.user_id,
+      name: row.name,
+      email: row.email,
+      role: 'field_officer',
+    });
+  }
+  return items;
+}
+
 export interface WorkerListQuery {
   search?: string;
   status?: string;
@@ -159,8 +221,23 @@ export const workerService = {
     const conditions: string[] = [];
     const params: unknown[] = [];
 
-    const scope = insertScope(actor);
-    if (scope) conditions.push(`(${scope})`);
+    const orgId = actor.currentOrg?.id;
+    if (orgId && roleAtLeast(actor.role, 'supervisor')) {
+      // Field officers are the organization's workers, so the roster is the
+      // set of active field-officer members (each with a linked worker row).
+      await syncFieldOfficerWorkers(orgId);
+      params.push(orgId);
+      conditions.push(`w.user_id IN (
+        SELECT m.user_id
+          FROM organization_memberships m
+          JOIN roles r ON r.id = m.role_id
+         WHERE m.organization_id = $${params.length}
+           AND m.status = 'active'
+           AND r.code = 'field_officer')`);
+    } else {
+      const scope = insertScope(actor);
+      if (scope) conditions.push(`(${scope})`);
+    }
 
     if (query.search) {
       params.push(`%${query.search}%`);
